@@ -1,38 +1,45 @@
 # an_state
 
-`an_state` is a reactive state management library for Flutter. It combines the power of `an_reactive_state` with the lifecycle management of `an_viewmodel` and the in-widget persistence of `remember`, providing a concise, efficient, and automated solution for handling application state.
+`an_state` is a powerful, lightweight reactive state management library for Flutter. It seamlessly integrates the high-performance reactive engine of `an_reactive_state`, the robust lifecycle management of `an_viewmodel`, and the elegant state persistence of `remember`.
 
 > [!IMPORTANT]
-> `an_state` **strongly depends** on [anlifecycle](https://pub.dev/packages/anlifecycle). Core features like `rememberState`, `rememberMutableState`, and `context.viewModels()` strictly require a `Lifecycle` context provided in the widget tree.
+> `an_state` **strongly depends** on [anlifecycle](https://pub.dev/packages/anlifecycle). All core features, including `rememberState`, `rememberMutableState`, and `context.viewModels()`, require a valid `Lifecycle` context provided within the widget tree.
 
-## Features
+---
 
-- **Reactive State**: Built on top of `an_reactive_state`, supporting both `RState` (mutable state) and `ComputedState` (computed properties).
-- **ViewModel Integration**: Provides `ViewModel` extensions to easily create reactive states bound to the ViewModel's lifecycle.
-- **Widget Local State**: A `remember`-like mechanism (inspired by Compose) to persist reactive states directly within the Widget tree.
-- **Auto Dependency Tracking**: No manual subscriptions required; state changes automatically trigger related computations and UI updates.
-- **Lifecycle Safety**: Leverages `cancellable` and `anlifecycle` to ensure resources are automatically released.
+## 🚀 Key Features
 
-## Getting Started
+- **🎯 Transparent Reactivity**: Based on `an_reactive_state`, UI updates automatically when state changes. No `notifyListeners()` or `setState()` required.
+- **🧬 Lifecycle-Aware**: States are bound to the lifecycle of ViewModels or Widgets, ensuring zero memory leaks through automatic resource cleanup.
+- **🏗️ Structured State**: Provides `RState` for mutable values and `ComputedState` for derived data with automatic dependency tracking.
+- **🔄 Compose-like DX**: Use `rememberMutableState` to persist reactive state across widget rebuilds, offering a developer experience similar to Jetpack Compose.
+- **🛠️ Bridge Utilities**: Easily convert legacy `ValueNotifier` or `ChangeNotifier` into modern reactive sources.
+
+---
+
+## 📦 Getting Started
 
 ### Installation
 
-Add `an_state` to your `pubspec.yaml`:
+Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   an_state: ^0.0.1
 ```
 
-### Lifecycle Setup
+### Mandatory Lifecycle Setup
 
-You **must** wrap your application with `LifecycleApp` and configure `LifecycleNavigatorObserver` to provide the necessary lifecycle context for `remember` and `ViewModel` extensions:
+Initialize the lifecycle system at the root of your application:
 
 ```dart
+import 'package:anlifecycle/anlifecycle.dart';
+
 void main() {
   runApp(
-    LifecycleApp(
+    LifecycleApp( // 1. Wrap with LifecycleApp
       child: MaterialApp(
+        // 2. Add the navigator observer
         navigatorObservers: [LifecycleNavigatorObserver.hookMode()],
         home: const HomePage(),
       ),
@@ -41,72 +48,104 @@ void main() {
 }
 ```
 
-## Usage
+---
 
-### Usage in ViewModel
+## 📖 Usage Guide
 
-Use `stateOf` for computed properties or `stateMutableOf` for mutable states:
+### 1. In ViewModels (Business Logic)
+
+Define your states using `stateMutableOf` and `stateOf`. These states will be automatically disposed of when the ViewModel is cleared.
 
 ```dart
-class MyViewModel extends ViewModel {
-  // Mutable state
-  late final count = stateMutableOf(stateValueOf(0));
+class UserViewModel extends ViewModel {
+  // Use stateValueOf to initialize mutable state
+  late final username = stateMutableOf(stateValueOf("Guest"));
+  
+  // Computed state depends on username
+  late final greeting = stateOf(() => "Hello, ${username.value}!");
 
-  // Computed state, automatically updates when count changes
-  late final doubleCount = stateOf(() => count.value * 2);
-
-  void increment() {
-    count.value++;
+  void updateName(String newName) {
+    username.value = newName; // UI updates automatically
   }
 }
 ```
 
-Then access it in your Widget using `listenRawState` to enable reactivity:
+### 2. In Widgets (UI Layer)
+
+Access ViewModels and observe states with minimal boilerplate.
 
 ```dart
 @override
 Widget build(BuildContext context) {
-  // Access ViewModel (requires Lifecycle context)
-  final vm = context.viewModels<MyViewModel>(factory: MyViewModel.new);
+  // Fetch ViewModel via extension (requires Lifecycle context)
+  final vm = context.viewModels<UserViewModel>(factory: UserViewModel.new);
   
-  // Observe reactive property
-  final count = context.listenRawState(vm.count);
-  
-  return Text('Count: $count');
-}
-```
+  // Use listenRawState to subscribe to changes and get the current value
+  final name = context.listenRawState(vm.username);
+  final message = context.listenRawState(vm.greeting);
 
-### Usage in Widget (Local State)
-
-Use `BuildContext` extensions to "remember" state within the `build` method (similar to Jetpack Compose):
-
-```dart
-@override
-Widget build(BuildContext context) {
-  // Persist a reactive state within the Widget tree (requires Lifecycle context)
-  final localCount = context.rememberMutableState(stateValueOf(0));
-
-  return TextButton(
-    onPressed: () => localCount.value++,
-    child: Text('Local Count: ${localCount.value}'),
+  return Column(
+    children: [
+      Text(message),
+      TextField(onChanged: vm.updateName),
+    ],
   );
 }
 ```
 
-## Core API
+### 3. Local Widget State
 
-- **ViewModel Extensions**:
-  - `stateOf`: Creates a read-only computed state.
-  - `stateMutableOf`: Creates a read-write mutable state.
-- **BuildContext Extensions**:
-  - `listenRawState`: Listens to a `BaseState` (RState or ComputedState) and returns its current value.
-  - `rememberState`: Remembers a computed state at the component level.
-  - `rememberMutableState`: Remembers a mutable state at the component level.
-- **Utility Functions**:
-  - `stateOfValueNotifier`: Observes a `ValueNotifier`.
-  - `stateOfChangeNotifier`: Observes a `ChangeNotifier`.
-  - `expensiveComputation`: Ensures heavy logic is only executed once.
+For UI-only state (like a toggle or a counter), use `remember` extensions to avoid boilerplate `StatefulWidget`s.
 
-## License
+```dart
+@override
+Widget build(BuildContext context) {
+  // Persists across rebuilds, disposed when the widget is removed from the tree
+  // Requires Lifecycle context
+  final isExpanded = context.rememberMutableState(stateValueOf(false));
 
-[Apache 2.0 LICENSE](LICENSE)
+  return Column(
+    children: [
+      Text("Details are ${isExpanded.value ? 'Visible' : 'Hidden'}"),
+      ElevatedButton(
+        onPressed: () => isExpanded.value = !isExpanded.value,
+        child: const Text("Toggle"),
+      ),
+    ],
+  );
+}
+```
+
+---
+
+## 🛠️ Advanced Tools
+
+### Initializers
+- `stateValueOf(T value)`: Creates an initializer for a simple value.
+- `stateListOf(List<T> list)`: Initializer for a reactive list.
+- `stateMapOf(Map<K, V> map)`: Initializer for a reactive map.
+
+### Bridge Tools
+- `stateOfValueNotifier(ValueNotifier<T> notifier)`: Converts a `ValueNotifier` into a reactive computer.
+- `stateOfChangeNotifier(...)`: Converts any `ChangeNotifier` into a reactive computer.
+
+### Optimization
+- `expensiveComputation(Computer<T> computer)`: Ensures a heavy calculation or registration logic runs **only once** during the state's lifecycle.
+
+---
+
+## 📋 Core API Reference
+
+| Method | Source | Description |
+| :--- | :--- | :--- |
+| `stateMutableOf(init)` | `ViewModel` | Creates a mutable `RState` bound to ViewModel. |
+| `stateOf(computer)` | `ViewModel` | Creates a read-only `ComputedState`. |
+| `rememberMutableState(init)` | `BuildContext` | Remembers a mutable state in the widget tree. |
+| `rememberState(computer)` | `BuildContext` | Remembers a computed state in the widget tree. |
+| `listenRawState(state)` | `BuildContext` | Watches a state and returns its value (triggers rebuild). |
+
+---
+
+## 📄 License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.

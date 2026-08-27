@@ -7,7 +7,10 @@ import 'package:remember/remember.dart';
 import 'package:remember/src/tools/element_safe.dart';
 
 extension RememberStateExt on BuildContext {
-  /// 可以在使用处和计算器双方都可以进行赋值修改
+  /// 在 Widget 树中记住一个可变状态 [RState]。
+  /// 类似于 Compose 的 `remember { mutableStateOf(...) }`。
+  /// [computer] 提供初始值。
+  /// [listen] 是否在状态变化时自动刷新当前 Widget。
   RState<T> rememberMutableState<T>(
     RStateComputer<T> computer, {
     RStateEquality<T>? equals,
@@ -20,6 +23,7 @@ extension RememberStateExt on BuildContext {
       },
       onCreate: listen
           ? (d, l, c) {
+              // 绑定 Element 刷新逻辑
               d.addListener(
                   safeMarkNeedsBuildVoidListener(this, cancellable: c));
             }
@@ -28,8 +32,10 @@ extension RememberStateExt on BuildContext {
     );
   }
 
-  /// 自动记住和计算新的状态信息 只能使用有其他的 [rememberState] 的内容 不可以与 [rememberListenable] 系列联动
-  /// 只可以由计算器对值进行修改，使用处无权修改
+  /// 在 Widget 树中记住一个计算状态 [ComputedState]。
+  /// 类似于 Compose 的 `remember(inputs) { derivedStateOf(...) }`。
+  /// [computer] 定义计算逻辑，会自动收集依赖。
+  /// [listen] 是否在计算结果变化时自动刷新当前 Widget。
   ComputedState<T> rememberState<T>(
     RStateComputer<T> computer, {
     RStateEquality<T>? equals,
@@ -43,6 +49,7 @@ extension RememberStateExt on BuildContext {
       },
       onCreate: listen
           ? (d, l, c) {
+              // 绑定 Element 刷新逻辑
               d.addListener(
                   safeMarkNeedsBuildVoidListener(this, cancellable: c));
             }
@@ -51,10 +58,13 @@ extension RememberStateExt on BuildContext {
     );
   }
 
+  /// 监听并消费一个响应式状态。
+  /// 当 [state] 发生变化时，会自动触发当前 Widget 的重新构建，并返回最新值。
   T listenRawState<T>(BaseState<T> state) {
     return remember<BaseState<T>>(
       factory: () => state,
       onCreate: (d, l, c) {
+        // 绑定 Element 刷新逻辑
         d.addListener(safeMarkNeedsBuildVoidListener(this, cancellable: c));
       },
       key: 'listenRawState',

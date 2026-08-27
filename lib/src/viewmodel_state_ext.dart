@@ -3,7 +3,9 @@ import 'package:an_state/src/tools.dart';
 import 'package:an_viewmodel/an_viewmodel.dart';
 
 extension ViewmodelStateExt on ViewModel {
-  /// 可以在使用处和计算器双方都可以进行赋值修改
+  /// 在 ViewModel 中创建一个可变状态 [RState]。
+  /// 该状态的生命周期将与 ViewModel 绑定，在 ViewModel 销毁时自动释放。
+  /// [computer] 提供初始值计算逻辑。
   RState<T> stateMutableOf<T>(
     RStateComputer<T> computer, {
     RStateEquality<T>? equals,
@@ -14,8 +16,9 @@ extension ViewmodelStateExt on ViewModel {
           cancellable: makeLiveCancellable(),
           equals: equals);
 
-  /// 自动记住和计算新的状态信息 只能使用有其他的 [stateOf] 的内容 不可以与 [Notifier] 系列联动
-  /// 只可以由计算器对值进行修改，使用处无权修改
+  /// 在 ViewModel 中创建一个计算状态 [ComputedState]。
+  /// 该状态会自动收集依赖，并与 ViewModel 生命周期绑定。
+  /// [computer] 定义计算逻辑。
   ComputedState<T> stateOf<T>(
     RStateComputer<T> computer, {
     RStateEquality<T>? equals,
