@@ -1,0 +1,32 @@
+name: an_state
+description: "A reactive state management library for Flutter, providing seamless integration between ViewModels, Widgets, and reactive observables."
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  an_reactive_state: ^1.0.0
+  an_async_data: ^1.1.0
+  cancellable: ^2.6.0
+  anlifecycle: ^3.7.0
+  an_lifecycle_cancellable: ^2.6.1
+  an_viewmodel: ^3.8.0
+  remember: ^2.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: any
+
+dependency_overrides:
+  an_reactive_state:
+    path: ../an_reactive_state
+
+
+flutter:
+

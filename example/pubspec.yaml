@@ -1,0 +1,22 @@
+name: an_state_example
+description: "An example app for an_state package."
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  an_state:
+    path: ../
+  an_viewmodel: ^3.8.0
+  anlifecycle: ^3.7.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
