@@ -55,10 +55,8 @@ class HomePageContent extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-                'Count (from ViewModel): ${context.listenRawState(vm.count)}'),
-            Text(
-                'Is Even: ${context.listenRawState(vm.isEven)}'),
+            Text('Count (from ViewModel): ${context.listenRawState(vm.count)}'),
+            Text('Is Even: ${context.listenRawState(vm.isEven)}'),
             const SizedBox(height: 20),
             const LocalCounter(),
           ],

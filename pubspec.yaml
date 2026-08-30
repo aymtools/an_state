@@ -10,9 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  an_reactive_state: ^1.0.0
+  an_reactive_state: ^1.1.0
   an_async_data: ^1.1.0
-  cancellable: ^2.6.0
+  cancellable: ^2.7.0
   anlifecycle: ^3.7.0
   an_lifecycle_cancellable: ^2.6.1
   an_viewmodel: ^3.8.0
@@ -24,9 +24,10 @@ dev_dependencies:
   flutter_lints: any
 
 dependency_overrides:
-  an_reactive_state:
-    path: ../an_reactive_state
-
+  cancellable:
+    git:
+      url: https://github.com/aymtools/cancellable.git
+      ref: dev
 
 flutter:
 

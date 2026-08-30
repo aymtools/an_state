@@ -128,6 +128,7 @@ Widget build(BuildContext context) {
 ### Bridge Tools
 - `stateOfValueNotifier(ValueNotifier<T> notifier)`: Converts a `ValueNotifier` into a reactive computer.
 - `stateOfChangeNotifier(...)`: Converts any `ChangeNotifier` into a reactive computer.
+- `stateOfAsync({required T initialValue, Future<T>? future, Stream<T>? steam})`: Converts a `Future` or `Stream` into a reactive computer. Returns `initialValue` until an async value is received.
 
 ### Optimization
 - `expensiveComputation(Computer<T> computer)`: Ensures a heavy calculation or registration logic runs **only once** during the state's lifecycle.
@@ -143,6 +144,7 @@ Widget build(BuildContext context) {
 | `rememberMutableState(init)` | `BuildContext` | Remembers a mutable state in the widget tree. |
 | `rememberState(computer)` | `BuildContext` | Remembers a computed state in the widget tree. |
 | `listenRawState(state)` | `BuildContext` | Watches a state and returns its value (triggers rebuild). |
+| `stateOfAsync(...)` | `Utility` | Converts a Future or Stream into a reactive computer. |
 
 ---
 
