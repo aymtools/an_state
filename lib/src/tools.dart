@@ -173,3 +173,6 @@ void _safeRunOnError<T>(Function? onError, Object error, StackTrace stackTrace,
     }
   }
 }
+
+/// 值计算器
+T computed<T>(RStateComputer<T> computer) => computer();
