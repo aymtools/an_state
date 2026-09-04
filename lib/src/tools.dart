@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:an_async_data/an_async_data.dart';
 import 'package:an_lifecycle_cancellable/an_lifecycle_cancellable.dart';
 import 'package:an_reactive_state/an_reactive_state.dart';
 import 'package:cancellable/cancellable.dart';
@@ -96,7 +97,11 @@ RStateComputer<T> stateOfChangeNotifier<T, CN extends ChangeNotifier>({
 RStateComputer<T> stateOfAsync<T>({
   required T initialValue,
   Future<T>? future,
-  Stream<T>? steam,
+  Future<T> Function()? fFactory,
+  Future<T> Function(Cancellable)? fFactory2,
+  Stream<T>? stream,
+  Stream<T> Function()? sFactory,
+  Stream<T> Function(Cancellable)? sFactory2,
   bool? cancelOnError,
   Function? onError,
   Cancellable? cancellable,
@@ -106,28 +111,157 @@ RStateComputer<T> stateOfAsync<T>({
     final curr = BaseState.currentState;
     if (curr == null) return;
     final can = curr.disposable.makeCancellable(father: cancellable);
-
-    if (future != null) {
-      _runFuture(future.bindCancellable(can), (value) {
+    if (can.isAvailable) {
+      void setValue(T value) {
         currentValue = value;
         curr.refresh();
-      }, onError);
-    }
+      }
 
-    if (steam != null) {
-      steam.bindCancellable(can).listen(
-        (value) {
-          currentValue = value;
+      void listenFuture(Future<T> future) {
+        _runFuture(future.bindCancellable(can), setValue, onError);
+      }
+
+      if (future != null) {
+        listenFuture(future);
+      }
+      if (fFactory != null) {
+        listenFuture(fFactory());
+      }
+      if (fFactory2 != null) {
+        listenFuture(fFactory2(can.makeCancellable()));
+      }
+
+      void subStream(Stream<T> stream) {
+        stream.bindCancellable(can).listen(
+          setValue,
+          onError: (Object error, StackTrace stackTrace) {
+            _safeRunOnError<T>(onError, error, stackTrace, setValue);
+          },
+          cancelOnError: cancelOnError,
+        );
+      }
+
+      if (stream != null) {
+        subStream(stream);
+      }
+      if (sFactory != null) {
+        subStream(sFactory());
+      }
+      if (sFactory2 != null) {
+        subStream(sFactory2(can.makeCancellable()));
+      }
+    }
+  });
+
+  return () {
+    init();
+    return currentValue;
+  };
+}
+
+/// 将 [Future] 或 [Stream] 转换为响应式状态计算器。
+/// 当异步任务完成或产生新值时，会自动触发当前响应式上下文的刷新。
+/// 返回的计算器会先返回 [initialValue]，在异步任务产生新值后返回最新结果。
+/// [cancellable] 可以控制是否还可以继续使用
+RStateComputer<AsyncData<T>> stateOfAsyncData<T>({
+  T? initialValue,
+  Future<T>? future,
+  Future<T> Function()? fFactory,
+  Future<T> Function(Cancellable)? fFactory2,
+  Stream<T>? stream,
+  Stream<T> Function()? sFactory,
+  Stream<T> Function(Cancellable)? sFactory2,
+  bool? cancelOnError,
+  Function? onError,
+  Cancellable? cancellable,
+}) {
+  AsyncData<T> currentValue = initialValue is T
+      ? AsyncData<T>.value(initialValue)
+      : AsyncData<T>.loading();
+  final init = expensiveComputation(() {
+    final curr = BaseState.currentState;
+    if (curr == null) return;
+    final can = curr.disposable.makeCancellable(father: cancellable);
+    if (can.isAvailable) {
+      void setValue(T value) {
+        currentValue = AsyncData<T>.value(value);
+        curr.refresh();
+      }
+
+      void setError(Object error, StackTrace stackTrace) {
+        if (onError == null) {
+          currentValue = AsyncData.error(error, stackTrace);
           curr.refresh();
-        },
-        onError: (Object error, StackTrace stackTrace) {
-          _safeRunOnError<T>(onError, error, stackTrace, (value) {
-            currentValue = value;
+        } else if (onError is dynamic Function(Object, StackTrace)) {
+          try {
+            dynamic errResult = onError(error, stackTrace);
+            if (errResult is T) {
+              setValue(errResult);
+            }
+          } catch (error, stackTrace) {
+            currentValue = AsyncData.error(error, stackTrace);
             curr.refresh();
-          });
-        },
-        cancelOnError: cancelOnError,
-      );
+          }
+        } else if (onError is dynamic Function(Object)) {
+          try {
+            dynamic errResult = onError(error);
+            if (errResult is T) {
+              setValue(errResult);
+            }
+          } catch (error, stackTrace) {
+            currentValue = AsyncData.error(error, stackTrace);
+            curr.refresh();
+          }
+        } else if (onError is dynamic Function()) {
+          try {
+            dynamic errResult = onError();
+            if (errResult is T) {
+              setValue(errResult);
+            }
+          } catch (error, stackTrace) {
+            currentValue = AsyncData.error(error, stackTrace);
+            curr.refresh();
+          }
+        } else {
+          throw ArgumentError.value(
+              onError,
+              "onError",
+              "Error handler must accept one Object or one Object and a StackTrace"
+                  " as arguments");
+        }
+      }
+
+      void listenFuture(Future<T> future) {
+        _runFuture(future.bindCancellable(can), setValue, setError);
+      }
+
+      if (future != null) {
+        listenFuture(future);
+      }
+      if (fFactory != null) {
+        listenFuture(fFactory());
+      }
+      if (fFactory2 != null) {
+        listenFuture(fFactory2(can.makeCancellable()));
+      }
+
+      void subStream(Stream<T> stream) {
+        stream.bindCancellable(can).listen(
+              setValue,
+              onError: setError,
+              cancelOnError: cancelOnError,
+            );
+      }
+
+      if (stream != null) {
+        subStream(stream);
+      }
+      if (sFactory != null) {
+        subStream(sFactory());
+      }
+      if (sFactory2 != null) {
+        subStream(sFactory2(can.makeCancellable()));
+      }
     }
   });
 
@@ -173,6 +307,3 @@ void _safeRunOnError<T>(Function? onError, Object error, StackTrace stackTrace,
     }
   }
 }
-
-/// 值计算器
-T computed<T>(RStateComputer<T> computer) => computer();

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:an_async_data/an_async_data.dart';
 import 'package:an_state/an_state.dart';
 import 'package:cancellable/cancellable.dart';
 import 'package:flutter/foundation.dart';
@@ -120,7 +121,7 @@ void main() {
       final controller = StreamController<int>();
       int computeCount = 0;
       final computer = stateOfAsync(
-        steam: controller.stream,
+        stream: controller.stream,
         initialValue: 0,
       );
       final reactive = ComputedState(
@@ -152,7 +153,7 @@ void main() {
       final controller = StreamController<int>();
       Object? capturedError;
       final computer = stateOfAsync<int>(
-        steam: controller.stream,
+        stream: controller.stream,
         initialValue: 0,
         onError: (e, s) {
           capturedError = e;
@@ -178,7 +179,7 @@ void main() {
       final controller = StreamController<int>();
       int errorCount = 0;
       final computer = stateOfAsync<int>(
-        steam: controller.stream,
+        stream: controller.stream,
         initialValue: 0,
         cancelOnError: true,
         onError: (e) {
@@ -211,8 +212,8 @@ void main() {
 
     test('stateOfAsync onError signatures', () async {
       final c1 = Completer<int>();
-      final comp1 =
-          stateOfAsync<int>(future: c1.future, initialValue: 0, onError: () => 1);
+      final comp1 = stateOfAsync<int>(
+          future: c1.future, initialValue: 0, onError: () => 1);
       final r1 = ComputedState(
         computer: () => comp1(),
         cancellable: Cancellable(),
@@ -220,8 +221,8 @@ void main() {
       expect(r1.value, 0); // Start subscription
 
       final c2 = Completer<int>();
-      final comp2 =
-          stateOfAsync<int>(future: c2.future, initialValue: 0, onError: (e) => 2);
+      final comp2 = stateOfAsync<int>(
+          future: c2.future, initialValue: 0, onError: (e) => 2);
       final r2 = ComputedState(
         computer: () => comp2(),
         cancellable: Cancellable(),
@@ -265,10 +266,11 @@ void main() {
       expect(reactive.value, 42);
     });
 
-    test('stateOfAsync outside of reactive context should not subscribe', () async {
+    test('stateOfAsync outside of reactive context should not subscribe',
+        () async {
       final controller = StreamController<int>();
       final computer = stateOfAsync<int>(
-        steam: controller.stream,
+        stream: controller.stream,
         initialValue: 0,
       );
 
@@ -284,10 +286,12 @@ void main() {
       controller.close();
     });
 
-    test('stateOfAsync should return current value without triggering new subscriptions', () async {
+    test(
+        'stateOfAsync should return current value without triggering new subscriptions',
+        () async {
       final controller = StreamController<int>();
       final computer = stateOfAsync<int>(
-        steam: controller.stream,
+        stream: controller.stream,
         initialValue: 0,
       );
 
@@ -296,26 +300,27 @@ void main() {
         cancellable: Cancellable(),
       );
       expect(reactive.value, 0);
-      
+
       expect(computer(), 0);
       expect(computer(), 0);
-      
+
       controller.add(1);
       await Future.delayed(Duration.zero);
-      
+
       expect(computer(), 1);
       expect(computer(), 1);
-      
+
       controller.close();
     });
 
-    test('stateOfAsync should cancel subscription when context is disposed', () async {
+    test('stateOfAsync should cancel subscription when context is disposed',
+        () async {
       final controller = StreamController<int>();
       int computeCount = 0;
       final cancellable = Cancellable();
-      
+
       final computer = stateOfAsync(
-        steam: controller.stream,
+        stream: controller.stream,
         initialValue: 0,
       );
 
@@ -329,21 +334,21 @@ void main() {
 
       expect(reactive.value, 0);
       expect(computeCount, 1);
-      
+
       controller.add(1);
       await Future.delayed(Duration.zero);
       expect(reactive.value, 1);
       expect(computeCount, 2);
 
       cancellable.cancel();
-      
+
       controller.add(2);
       await Future.delayed(Duration.zero);
-      
+
       // Should still be 1 because subscription should be cancelled
       expect(reactive.value, 1);
       expect(computeCount, 2);
-      
+
       controller.close();
     });
 
@@ -352,7 +357,7 @@ void main() {
       final manualCancellable = Cancellable();
 
       final computer = stateOfAsync(
-        steam: controller.stream,
+        stream: controller.stream,
         initialValue: 0,
         cancellable: manualCancellable,
       );
@@ -376,7 +381,7 @@ void main() {
 
       controller.close();
     });
-   group('stateOfAsync Initializers', () {
+    group('stateOfAsync Initializers', () {
       test('stateValueOf', () {
         final computer = stateValueOf(42);
         expect(computer(), 42);
@@ -395,6 +400,269 @@ void main() {
       test('stateSetOf', () {
         final computer = stateSetOf({1});
         expect(computer(), {1});
+      });
+    });
+
+    group('stateOfAsyncData', () {
+      test('initialValue default vs custom', () {
+        final comp1 = stateOfAsyncData<int>();
+        final r1 = ComputedState(
+          computer: () => comp1(),
+          cancellable: Cancellable(),
+        );
+        expect(r1.value, AsyncData<int>.loading());
+
+        final comp2 = stateOfAsyncData<int>(initialValue: 10);
+        final r2 = ComputedState(
+          computer: () => comp2(),
+          cancellable: Cancellable(),
+        );
+        expect(r2.value, AsyncData<int>.value(10));
+      });
+
+      test('Future, fFactory, fFactory2', () async {
+        final completer = Completer<int>();
+        final compFuture = stateOfAsyncData<int>(future: completer.future);
+        final rFuture = ComputedState(
+          computer: () => compFuture(),
+          cancellable: Cancellable(),
+        );
+
+        expect(rFuture.value, AsyncData<int>.loading());
+        completer.complete(42);
+        await Future.delayed(Duration.zero);
+        expect(rFuture.value, AsyncData<int>.value(42));
+
+        final compFactory = stateOfAsyncData<int>(
+          fFactory: () => Future.value(100),
+        );
+        final rFactory = ComputedState(
+          computer: () => compFactory(),
+          cancellable: Cancellable(),
+        );
+        expect(rFactory.value, AsyncData<int>.loading());
+        await Future.delayed(Duration.zero);
+        expect(rFactory.value, AsyncData<int>.value(100));
+
+        Cancellable? capturedCancellable;
+        final compFactory2 = stateOfAsyncData<int>(
+          fFactory2: (can) {
+            capturedCancellable = can;
+            return Future.value(200);
+          },
+        );
+        final rFactory2 = ComputedState(
+          computer: () => compFactory2(),
+          cancellable: Cancellable(),
+        );
+        expect(rFactory2.value, AsyncData<int>.loading());
+        await Future.delayed(Duration.zero);
+        expect(rFactory2.value, AsyncData<int>.value(200));
+        expect(capturedCancellable, isNotNull);
+      });
+
+      test('Future Error and onError', () async {
+        final completer1 = Completer<int>();
+        final comp1 = stateOfAsyncData<int>(future: completer1.future);
+        final r1 = ComputedState(
+          computer: () => comp1(),
+          cancellable: Cancellable(),
+        );
+        expect(r1.value, AsyncData<int>.loading());
+
+        completer1.completeError('test error');
+        await Future.delayed(Duration.zero);
+        expect(r1.value, isA<AsyncDataError<int>>());
+        expect((r1.value as AsyncDataError<int>).error, 'test error');
+
+        final completer2 = Completer<int>();
+        final comp2 = stateOfAsyncData<int>(
+          future: completer2.future,
+          onError: (e) => -1,
+        );
+        final r2 = ComputedState(
+          computer: () => comp2(),
+          cancellable: Cancellable(),
+        );
+        expect(r2.value, AsyncData<int>.loading());
+
+        completer2.completeError('error');
+        await Future.delayed(Duration.zero);
+        expect(r2.value, AsyncData<int>.value(-1));
+
+        final completer3 = Completer<int>();
+        final comp3 = stateOfAsyncData<int>(
+          future: completer3.future,
+          onError: (e) => throw 'error in onError',
+        );
+        final r3 = ComputedState(
+          computer: () => comp3(),
+          cancellable: Cancellable(),
+        );
+        expect(r3.value, AsyncData<int>.loading());
+
+        completer3.completeError('original error');
+        await Future.delayed(Duration.zero);
+        expect(r3.value, isA<AsyncDataError<int>>());
+        expect((r3.value as AsyncDataError<int>).error, 'error in onError');
+      });
+
+      test('Stream, sFactory, sFactory2', () async {
+        final controller = StreamController<int>();
+        final compStream = stateOfAsyncData<int>(stream: controller.stream);
+        final rStream = ComputedState(
+          computer: () => compStream(),
+          cancellable: Cancellable(),
+        );
+        expect(rStream.value, AsyncData<int>.loading());
+
+        controller.add(1);
+        await Future.delayed(Duration.zero);
+        expect(rStream.value, AsyncData<int>.value(1));
+
+        controller.add(2);
+        await Future.delayed(Duration.zero);
+        expect(rStream.value, AsyncData<int>.value(2));
+
+        controller.close();
+
+        final sController = StreamController<int>();
+        final compSFactory = stateOfAsyncData<int>(
+          sFactory: () => sController.stream,
+        );
+        final rSFactory = ComputedState(
+          computer: () => compSFactory(),
+          cancellable: Cancellable(),
+        );
+        expect(rSFactory.value, AsyncData<int>.loading());
+
+        sController.add(10);
+        await Future.delayed(Duration.zero);
+        expect(rSFactory.value, AsyncData<int>.value(10));
+        sController.close();
+
+        final s2Controller = StreamController<int>();
+        Cancellable? capturedCancellable;
+        final compSFactory2 = stateOfAsyncData<int>(
+          sFactory2: (can) {
+            capturedCancellable = can;
+            return s2Controller.stream;
+          },
+        );
+        final rSFactory2 = ComputedState(
+          computer: () => compSFactory2(),
+          cancellable: Cancellable(),
+        );
+        expect(rSFactory2.value, AsyncData<int>.loading());
+
+        s2Controller.add(20);
+        await Future.delayed(Duration.zero);
+        expect(rSFactory2.value, AsyncData<int>.value(20));
+        expect(capturedCancellable, isNotNull);
+        s2Controller.close();
+      });
+
+      test('Stream Error and cancelOnError', () async {
+        final controller = StreamController<int>();
+        final comp = stateOfAsyncData<int>(
+          stream: controller.stream,
+          cancelOnError: true,
+        );
+        final r = ComputedState(
+          computer: () => comp(),
+          cancellable: Cancellable(),
+        );
+        expect(r.value, AsyncData<int>.loading());
+
+        controller.add(1);
+        await Future.delayed(Duration.zero);
+        expect(r.value, AsyncData<int>.value(1));
+
+        controller.addError('stream error');
+        await Future.delayed(Duration.zero);
+        expect(r.value, isA<AsyncDataError<int>>());
+        expect((r.value as AsyncDataError<int>).error, 'stream error');
+
+        controller.add(2);
+        await Future.delayed(Duration.zero);
+        // Because cancelOnError is true, value should remain error
+        expect((r.value as AsyncDataError<int>).error, 'stream error');
+
+        controller.close();
+      });
+
+      test('onError signatures', () async {
+        final c1 = Completer<int>();
+        final comp1 = stateOfAsyncData<int>(
+          future: c1.future,
+          onError: () => 1,
+        );
+        final r1 = ComputedState(
+          computer: () => comp1(),
+          cancellable: Cancellable(),
+        );
+        expect(r1.value, AsyncData<int>.loading());
+
+        final c2 = Completer<int>();
+        final comp2 = stateOfAsyncData<int>(
+          future: c2.future,
+          onError: (e) => 2,
+        );
+        final r2 = ComputedState(
+          computer: () => comp2(),
+          cancellable: Cancellable(),
+        );
+        expect(r2.value, AsyncData<int>.loading());
+
+        final c3 = Completer<int>();
+        final comp3 = stateOfAsyncData<int>(
+          future: c3.future,
+          onError: (e, s) => 3,
+        );
+        final r3 = ComputedState(
+          computer: () => comp3(),
+          cancellable: Cancellable(),
+        );
+        expect(r3.value, AsyncData<int>.loading());
+
+        c1.completeError('e');
+        c2.completeError('e');
+        c3.completeError('e');
+
+        await Future.delayed(Duration.zero);
+
+        expect(r1.value, AsyncData<int>.value(1));
+        expect(r2.value, AsyncData<int>.value(2));
+        expect(r3.value, AsyncData<int>.value(3));
+      });
+
+      test('explicit cancellable and context disposal', () async {
+        final controller = StreamController<int>();
+        final manualCancellable = Cancellable();
+
+        final comp = stateOfAsyncData<int>(
+          stream: controller.stream,
+          cancellable: manualCancellable,
+        );
+
+        final r = ComputedState(
+          computer: () => comp(),
+          cancellable: Cancellable(),
+        );
+
+        expect(r.value, AsyncData<int>.loading());
+
+        controller.add(1);
+        await Future.delayed(Duration.zero);
+        expect(r.value, AsyncData<int>.value(1));
+
+        manualCancellable.cancel();
+
+        controller.add(2);
+        await Future.delayed(Duration.zero);
+        expect(r.value, AsyncData<int>.value(1));
+
+        controller.close();
       });
     });
   });
