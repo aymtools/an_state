@@ -25,9 +25,9 @@ extension AsyncDataStateExt<T> on RState<AsyncData<T>> {
   void toError(Object error, [StackTrace? stackTrace]) =>
       value = AsyncData<T>.error(error, stackTrace);
 
-  void toDataLoading() => hasData
+  void toDataLoading() => value = hasData
       ? AsyncData<T>.dataLoading(_getInnerData())
-      : value = AsyncData<T>.loading();
+      : AsyncData<T>.loading();
 
   void toDataLoadingRaw(T data) => value = AsyncData<T>.dataLoading(data);
 
