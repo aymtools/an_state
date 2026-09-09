@@ -1,6 +1,6 @@
 name: an_state
 description: "A reactive state management library for Flutter, providing seamless integration between ViewModels, Widgets, and reactive observables."
-version: 1.1.0
+version: 1.2.0
 homepage: https://github.com/aymtools/an_state/
 issue_tracker: https://github.com/aymtools/an_state/issues
 
@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   an_reactive_state: ^1.1.0
-  an_async_data: ^1.1.0
+  an_async_data: ^1.2.0
   cancellable: ^2.7.0
   anlifecycle: ^3.7.0
   an_lifecycle_cancellable: ^2.6.1

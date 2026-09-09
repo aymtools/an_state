@@ -60,14 +60,32 @@ extension RememberStateExt on BuildContext {
 
   /// 监听并消费一个响应式状态。
   /// 当 [state] 发生变化时，会自动触发当前 Widget 的重新构建，并返回最新值。
-  T listenRawState<T>(BaseState<T> state) {
+  T listenRawState<T>(BaseState<T> state) => listenReactiveState(state);
+
+  /// 监听并消费一个响应式状态。
+  /// 当 [state] 发生变化时，会自动触发当前 Widget 的重新构建，并返回最新值。
+  T listenReactiveState<T>(BaseState<T> state) {
     return remember<BaseState<T>>(
       factory: () => state,
       onCreate: (d, l, c) {
         // 绑定 Element 刷新逻辑
         d.addListener(safeMarkNeedsBuildVoidListener(this, cancellable: c));
       },
-      key: 'listenRawState',
+      key: 'listenReactiveState',
     ).value;
+  }
+
+  /// 监听并消费多个响应式状态。
+  void listenReactiveStates(RStateComputer<void> computer) {
+    remember<Object>(
+      factory3: (_, cancellable) {
+        final rElement = WeakReference(this as Element);
+        effect(() {
+          elementSafeMarkNeedsBuild(rElement, cancellable: cancellable);
+          computer();
+        }, cancellable);
+        return const Object();
+      },
+    );
   }
 }
