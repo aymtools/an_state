@@ -25,7 +25,7 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  an_state: ^0.0.1
+  an_state: ^1.2.0
 ```
 
 ### Mandatory Lifecycle Setup
@@ -52,48 +52,7 @@ void main() {
 
 ## 📖 Usage Guide
 
-### 1. In ViewModels (Business Logic)
-
-Define your states using `stateMutableOf` and `stateOf`. These states will be automatically disposed of when the ViewModel is cleared.
-
-```dart
-class UserViewModel extends ViewModel {
-  // Use stateValueOf to initialize mutable state
-  late final username = stateMutableOf(stateValueOf("Guest"));
-  
-  // Computed state depends on username
-  late final greeting = stateOf(() => "Hello, ${username.value}!");
-
-  void updateName(String newName) {
-    username.value = newName; // UI updates automatically
-  }
-}
-```
-
-### 2. In Widgets (UI Layer)
-
-Access ViewModels and observe states with minimal boilerplate.
-
-```dart
-@override
-Widget build(BuildContext context) {
-  // Fetch ViewModel via extension (requires Lifecycle context)
-  final vm = context.viewModels<UserViewModel>(factory: UserViewModel.new);
-  
-  // Use listenRawState to subscribe to changes and get the current value
-  final name = context.listenRawState(vm.username);
-  final message = context.listenRawState(vm.greeting);
-
-  return Column(
-    children: [
-      Text(message),
-      TextField(onChanged: vm.updateName),
-    ],
-  );
-}
-```
-
-### 3. Local Widget State
+### 1. Local Widget State
 
 For UI-only state (like a toggle or a counter), use `remember` extensions to avoid boilerplate `StatefulWidget`s.
 
@@ -116,6 +75,63 @@ Widget build(BuildContext context) {
 }
 ```
 
+### 2. In ViewModels (Business Logic)
+
+Define your states using `stateMutableOf` and `stateOf`. These states will be automatically disposed of when the ViewModel is cleared.
+
+```dart
+class UserViewModel extends ViewModel {
+  // Use stateValueOf to initialize mutable state
+  late final username = stateMutableOf(stateValueOf("Guest"));
+  
+  // Computed state depends on username
+  late final greeting = stateOf(() => "Hello, ${username.value}!");
+
+  void updateName(String newName) {
+    username.value = newName; // UI updates automatically
+  }
+}
+```
+
+### 3. In Widgets (UI Layer)
+
+Access ViewModels and observe states with minimal boilerplate.
+
+```dart
+@override
+Widget build(BuildContext context) {
+  // Fetch ViewModel via extension (requires Lifecycle context)
+  final vm = context.viewModels<UserViewModel>(factory: UserViewModel.new);
+  
+  // Use listenReactiveState to subscribe to a single state and get its value
+  final name = context.listenReactiveState(vm.username);
+  final message = context.listenReactiveState(vm.greeting);
+
+  // Or use listenReactiveStates to observe multiple reactive states at once.
+  // Executes in a reactive scope (`effect`), automatically tracking accessed state dependencies.
+  context.listenReactiveStates(() {
+    print("Active User: ${vm.username.value}");
+  });
+
+  // Consuming AsyncData states with AsyncDataStateExt
+  final userState = vm.userState; // RState<AsyncData<User>>
+  context.listenReactiveState(userState);
+
+  if (userState.isLoading) {
+    return const CircularProgressIndicator();
+  } else if (userState.isError) {
+    return Text("Error: ${userState.error}");
+  }
+
+  return Column(
+    children: [
+      Text("User: ${userState.data.name}, Message: $message"),
+      TextField(onChanged: vm.updateName),
+    ],
+  );
+}
+```
+
 ---
 
 ## 🛠️ Advanced Tools
@@ -126,9 +142,22 @@ Widget build(BuildContext context) {
 - `stateMapOf(Map<K, V> map)`: Initializer for a reactive map.
 
 ### Bridge Tools
-- `stateOfValueNotifier(ValueNotifier<T> notifier)`: Converts a `ValueNotifier` into a reactive computer.
-- `stateOfChangeNotifier(...)`: Converts any `ChangeNotifier` into a reactive computer.
-- `stateOfAsync({required T initialValue, Future<T>? future, Stream<T>? steam})`: Converts a `Future` or `Stream` into a reactive computer. Returns `initialValue` until an async value is received.
+- `stateOfValueNotifier(valueNotifier: notifier)`: Converts a `ValueNotifier` into a reactive computer.
+- `stateOfChangeNotifier(changeNotifier: notifier, computer: (cn) => cn.value)`: Converts any `ChangeNotifier` into a reactive computer.
+- `stateOfAsync({required T initialValue, Future<T>? future, Stream<T>? stream, ...})`: Converts a `Future` or `Stream` into a reactive computer. Returns `initialValue` until an async value is received. Supports lazy factories `fFactory`/`fFactory2(cancellable)` and `sFactory`/`sFactory2(cancellable)`.
+- `stateOfAsyncData<T>({T? initialValue, Future<T>? future, Stream<T>? stream, ...})`: Converts a `Future` or `Stream` into a reactive `AsyncData<T>` computer (starts as `AsyncData.loading()` or `AsyncData.value(initialValue)`). Supports lazy factories `fFactory`/`fFactory2(cancellable)` and `sFactory`/`sFactory2(cancellable)`.
+
+### AsyncDataStateExt Extensions
+Convenient extensions on `RState<AsyncData<T>>`:
+- **State Checkers**: `isLoading`, `isError`, `isData`, `hasData`, `data`, `dataOrNull`, `error`, `stackTrace`.
+- **State Mutators**:
+  - `toLoading()`: Sets state to `AsyncData.loading()`.
+  - `toData(T data)`: Sets state to `AsyncData.data(data)`.
+  - `toError(Object error, [StackTrace? st])`: Sets state to `AsyncData.error(error, st)`.
+  - `toDataLoading()`: Keeps existing data if `hasData` is true and sets `AsyncData.dataLoading(data)`, otherwise sets `AsyncData.loading()`.
+  - `toDataLoadingRaw(T data)`: Sets state to `AsyncData.dataLoading(data)`.
+  - `toDataError(Object error, [StackTrace? st])`: Keeps existing data if `hasData` is true and sets `AsyncData.dataError(data, error, st)`, otherwise sets `AsyncData.error(error, st)`.
+  - `toDataErrorRaw(T data, Object error, [StackTrace? st])`: Sets state to `AsyncData.dataError(data, error, st)`.
 
 ### Optimization
 - `expensiveComputation(Computer<T> computer)`: Ensures a heavy calculation or registration logic runs **only once** during the state's lifecycle.
@@ -139,12 +168,15 @@ Widget build(BuildContext context) {
 
 | Method | Source | Description |
 | :--- | :--- | :--- |
-| `stateMutableOf(init)` | `ViewModel` | Creates a mutable `RState` bound to ViewModel. |
+| `stateMutableOf(computer)` | `ViewModel` | Creates a mutable `RState` bound to ViewModel. |
 | `stateOf(computer)` | `ViewModel` | Creates a read-only `ComputedState`. |
-| `rememberMutableState(init)` | `BuildContext` | Remembers a mutable state in the widget tree. |
+| `rememberMutableState(computer)` | `BuildContext` | Remembers a mutable state in the widget tree. |
 | `rememberState(computer)` | `BuildContext` | Remembers a computed state in the widget tree. |
-| `listenRawState(state)` | `BuildContext` | Watches a state and returns its value (triggers rebuild). |
+| `listenReactiveState(state)` | `BuildContext` | Watches a single state and returns its value (triggers rebuild). Alias: `listenRawState`. |
+| `listenReactiveStates(computer)` | `BuildContext` | Watches multiple states accessed inside the callback (triggers rebuild). |
 | `stateOfAsync(...)` | `Utility` | Converts a Future or Stream into a reactive computer. |
+| `stateOfAsyncData(...)` | `Utility` | Converts a Future or Stream into a reactive `AsyncData<T>` computer. |
+| `AsyncDataStateExt` | `Extension` | Convenience methods on `RState<AsyncData<T>>` for checking and mutating async states (`toData`, `toDataLoading`, `toDataError`, etc.). |
 
 ---
 
