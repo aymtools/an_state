@@ -195,6 +195,23 @@ Convenient extensions on `RState<AsyncData<T>>`:
 
 ---
 
+## 📚 Ecosystem & Underlying Packages
+
+`an_state` combines the strengths of several core libraries. For deeper learning on specific
+features, advanced APIs, or lifecycle details, please refer to their official documentations
+directly:
+
+- **[anlifecycle](https://pub.dev/packages/anlifecycle)**: Complete lifecycle management system for
+  Flutter applications, routes, and widgets.
+- **[an_viewmodel](https://pub.dev/packages/an_viewmodel)**: ViewModel architecture component for
+  business logic and lifecycle-aware state scoping.
+- **[remember](https://pub.dev/packages/remember)**: Jetpack Compose-like state persistence and
+  widget memory management.
+- **[an_reactive_state](https://pub.dev/packages/an_reactive_state)**: Transparent, high-performance
+  reactive state engine with automatic dependency tracking.
+
+---
+
 ## 📋 Core API Reference
 
 | Method                           | Source         | Description                                                                                                                            |
