@@ -43,8 +43,8 @@ RStateComputer<Set<E>> stateSetOf<E>(Set<E> value) =>
 
 /// 将 [ValueNotifier] 转换为响应式状态计算器。
 /// 当 [ValueNotifier] 的值发生变化时，会自动触发当前响应式上下文的刷新。
-RStateComputer<T> stateOfValueNotifier<T>({
-  required ValueNotifier<T> valueNotifier,
+RStateComputer<T> stateOfValueNotifier<T>(
+  ValueNotifier<T> valueNotifier, {
   String? debugLabel,
 }) {
   final init = expensiveComputation(

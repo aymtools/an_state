@@ -25,7 +25,7 @@ void main() {
     test('stateOfValueNotifier should observe changes', () {
       final notifier = ValueNotifier(0);
       int computeCount = 0;
-      final computer = stateOfValueNotifier(valueNotifier: notifier);
+      final computer = stateOfValueNotifier(notifier);
       final reactive = ComputedState(
         computer: () {
           computeCount++;
@@ -400,6 +400,26 @@ void main() {
       test('stateSetOf', () {
         final computer = stateSetOf({1});
         expect(computer(), {1});
+      });
+
+      test('extension getters (asStateOf, asNullableStateOf)', () {
+        expect(42.asStateOf(), 42);
+        expect(42.asNullableStateOf(), 42);
+
+        final list = [1, 2, 3];
+        expect(list.asStateOf(), [1, 2, 3]);
+        expect(list.asNullableStateOf(), [1, 2, 3]);
+
+        final set = {1, 2};
+        expect(set.asStateOf(), {1, 2});
+        expect(set.asNullableStateOf(), {1, 2});
+
+        final map = {'a': 1};
+        expect(map.asStateOf(), {'a': 1});
+
+        final notifier = ValueNotifier(10);
+        final computer = notifier.asStateOf;
+        expect(computer(), 10);
       });
     });
 

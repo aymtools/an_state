@@ -1,3 +1,10 @@
+## 1.3.0
+
+* Add extension getters (`asStateOf`, `asNullableStateOf`) for `Object`, `List`, `Set`, `Map`, and `ValueNotifier`
+* Refactor `stateOfValueNotifier` parameter from required named parameter to positional parameter
+* Upgrade `an_reactive_state` to `^1.2.0`
+* Make `cancellable` parameter optional across `BaseState`, `RState`, `ComputedState`, and `effect()`
+
 ## 1.2.0
 
 * add AsyncDataStateExt

@@ -83,7 +83,7 @@ extension RememberStateExt on BuildContext {
         effect(() {
           elementSafeMarkNeedsBuild(rElement, cancellable: cancellable);
           computer();
-        }, cancellable);
+        }, cancellable: cancellable);
         return const Object();
       },
     );

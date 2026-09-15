@@ -6,7 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('BuildContext Extensions (remember)', () {
-    testWidgets('rememberMutableState should persist and trigger rebuild', (WidgetTester tester) async {
+    testWidgets('rememberMutableState should persist and trigger rebuild',
+        (WidgetTester tester) async {
       int buildCount = 0;
       late RState<int> state;
 
@@ -38,7 +39,8 @@ void main() {
       expect(buildCount, 2);
     });
 
-    testWidgets('rememberState should update when dependency changes', (WidgetTester tester) async {
+    testWidgets('rememberState should update when dependency changes',
+        (WidgetTester tester) async {
       final notifier = ValueNotifier(0);
       int buildCount = 0;
 
@@ -50,7 +52,7 @@ void main() {
               body: Builder(
                 builder: (context) {
                   buildCount++;
-                  final computer = stateOfValueNotifier(valueNotifier: notifier);
+                  final computer = stateOfValueNotifier(notifier);
                   final reactive = context.rememberState(() => computer());
                   return Text('Value: ${reactive.value}');
                 },
@@ -71,7 +73,8 @@ void main() {
       expect(buildCount, 2);
     });
 
-    testWidgets('listenReactiveState should return state value and trigger rebuild on change',
+    testWidgets(
+        'listenReactiveState should return state value and trigger rebuild on change',
         (WidgetTester tester) async {
       final cancellable = Cancellable();
       final state = RState<int>(
@@ -108,7 +111,8 @@ void main() {
       expect(buildCount, 2);
     });
 
-    testWidgets('listenRawState should delegate to listenReactiveState and trigger rebuild',
+    testWidgets(
+        'listenRawState should delegate to listenReactiveState and trigger rebuild',
         (WidgetTester tester) async {
       final cancellable = Cancellable();
       final state = RState<int>(
@@ -144,7 +148,8 @@ void main() {
       expect(buildCount, 2);
     });
 
-    testWidgets('listenReactiveStates should observe multiple states and trigger rebuild',
+    testWidgets(
+        'listenReactiveStates should observe multiple states and trigger rebuild',
         (WidgetTester tester) async {
       final cancellable = Cancellable();
       final state1 = RState<int>(
