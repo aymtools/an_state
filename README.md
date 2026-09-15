@@ -36,7 +36,7 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  an_state: ^1.2.0
+  an_state: ^1.3.0
 ```
 
 ### Mandatory Lifecycle Setup
@@ -73,7 +73,7 @@ For UI-only state (like a toggle or a counter), use `remember` extensions to avo
 Widget build(BuildContext context) {
   // Persists across rebuilds, disposed when the widget is removed from the tree
   // Requires Lifecycle context
-  final isExpanded = context.rememberMutableState(stateValueOf(false));
+  final isExpanded = context.rememberMutableState(false.asStateOf);
 
   return Column(
     children: [
@@ -94,8 +94,8 @@ of when the ViewModel is cleared.
 
 ```dart
 class UserViewModel extends ViewModel {
-  // Use stateValueOf to initialize mutable state
-  late final username = stateMutableOf(stateValueOf("Guest"));
+  // Use .asStateOf extension to initialize mutable state
+  late final username = stateMutableOf("Guest".asStateOf);
 
   // Computed state depends on username
   late final greeting = stateOf(() => "Hello, ${username.value}!");
@@ -149,15 +149,18 @@ Widget build(BuildContext context) {
 
 ## 🛠️ Advanced Tools
 
-### Initializers
+### Initializers & Extension Getters
 
-- `stateValueOf(T value)`: Creates an initializer for a simple value.
-- `stateListOf(List<T> list)`: Initializer for a reactive list.
-- `stateMapOf(Map<K, V> map)`: Initializer for a reactive map.
+- `.asStateOf`: Extension getter on `Object`, `List`, `Set`, `Map`, and `ValueNotifier` to convert values directly into `RStateComputer` (e.g. `"Guest".asStateOf`, `[1, 2].asStateOf`, `notifier.asStateOf`). Preferred over functional initializers.
+- `.asNullableStateOf`: Extension getter for nullable value initializers (e.g. `"Guest".asNullableStateOf`).
+- `stateValueOf(T value)`: Functional initializer for a simple value.
+- `stateListOf(List<T> list)`: Functional initializer for a reactive list.
+- `stateMapOf(Map<K, V> map)`: Functional initializer for a reactive map.
+- `stateSetOf(Set<E> set)`: Functional initializer for a reactive set.
 
 ### Bridge Tools
 
-- `stateOfValueNotifier(valueNotifier: notifier)`: Converts a `ValueNotifier` into a reactive
+- `stateOfValueNotifier(notifier)` (or `notifier.asStateOf`): Converts a `ValueNotifier` into a reactive
   computer.
 - `stateOfChangeNotifier(changeNotifier: notifier, computer: (cn) => cn.value)`: Converts any
   `ChangeNotifier` into a reactive computer.
@@ -216,6 +219,7 @@ directly:
 
 | Method                           | Source         | Description                                                                                                                            |
 |:---------------------------------|:---------------|:---------------------------------------------------------------------------------------------------------------------------------------|
+| `asStateOf` / `asNullableStateOf` | `Extension`    | Extension getters on values (`"Guest".asStateOf`, `list.asStateOf`, `notifier.asStateOf`) to create `RStateComputer`. Preferred.       |
 | `stateMutableOf(computer)`       | `ViewModel`    | Creates a mutable `RState` bound to ViewModel.                                                                                         |
 | `stateOf(computer)`              | `ViewModel`    | Creates a read-only `ComputedState`.                                                                                                   |
 | `rememberMutableState(computer)` | `BuildContext` | Remembers a mutable state in the widget tree.                                                                                          |
