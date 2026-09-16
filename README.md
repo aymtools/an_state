@@ -36,7 +36,7 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  an_state: ^1.3.0
+  an_state: ^1.3.1
 ```
 
 ### Mandatory Lifecycle Setup
@@ -152,7 +152,7 @@ Widget build(BuildContext context) {
 ### Initializers & Extension Getters
 
 - `.asStateOf`: Extension getter on `Object`, `List`, `Set`, `Map`, and `ValueNotifier` to convert values directly into `RStateComputer` (e.g. `"Guest".asStateOf`, `[1, 2].asStateOf`, `notifier.asStateOf`). Preferred over functional initializers.
-- `.asNullableStateOf`: Extension getter for nullable value initializers (e.g. `"Guest".asNullableStateOf`).
+- `.asNullableStateOf`: Extension getter on `Object`, `List`, `Set`, `Map`, and `ValueNotifier` for nullable value initializers (e.g. `"Guest".asNullableStateOf`, `map.asNullableStateOf`, `notifier.asNullableStateOf`).
 - `stateValueOf(T value)`: Functional initializer for a simple value.
 - `stateListOf(List<T> list)`: Functional initializer for a reactive list.
 - `stateMapOf(Map<K, V> map)`: Functional initializer for a reactive map.

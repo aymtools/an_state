@@ -1,3 +1,7 @@
+## 1.3.1
+
+* Add `asNullableStateOf` extension getter for `Map` and `ValueNotifier`
+
 ## 1.3.0
 
 * Add extension getters (`asStateOf`, `asNullableStateOf`) for `Object`, `List`, `Set`, `Map`, and `ValueNotifier`

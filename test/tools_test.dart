@@ -416,10 +416,13 @@ void main() {
 
         final map = {'a': 1};
         expect(map.asStateOf(), {'a': 1});
+        expect(map.asNullableStateOf(), {'a': 1});
 
         final notifier = ValueNotifier(10);
         final computer = notifier.asStateOf;
         expect(computer(), 10);
+        final nullableComputer = notifier.asNullableStateOf;
+        expect(nullableComputer(), 10);
       });
     });
 
