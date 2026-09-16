@@ -1,6 +1,7 @@
 ## 1.3.1
 
 * Add `asNullableStateOf` extension getter for `Map` and `ValueNotifier`
+* Add `nullAsStateOf<T>()` helper function for initializing nullable state with `null`
 
 ## 1.3.0
 

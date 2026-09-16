@@ -54,3 +54,5 @@ extension AsStateOfValueNotifierExt<T> on ValueNotifier<T> {
     }
   }
 }
+
+RStateComputer<T?> nullAsStateOf<T>() => stateValueOf<T?>(null);

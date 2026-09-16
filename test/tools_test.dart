@@ -423,6 +423,9 @@ void main() {
         expect(computer(), 10);
         final nullableComputer = notifier.asNullableStateOf;
         expect(nullableComputer(), 10);
+
+        final nullComputer = nullAsStateOf<int>();
+        expect(nullComputer(), isNull);
       });
     });
 

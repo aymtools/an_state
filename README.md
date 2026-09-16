@@ -153,6 +153,7 @@ Widget build(BuildContext context) {
 
 - `.asStateOf`: Extension getter on `Object`, `List`, `Set`, `Map`, and `ValueNotifier` to convert values directly into `RStateComputer` (e.g. `"Guest".asStateOf`, `[1, 2].asStateOf`, `notifier.asStateOf`). Preferred over functional initializers.
 - `.asNullableStateOf`: Extension getter on `Object`, `List`, `Set`, `Map`, and `ValueNotifier` for nullable value initializers (e.g. `"Guest".asNullableStateOf`, `map.asNullableStateOf`, `notifier.asNullableStateOf`).
+- `nullAsStateOf<T>()`: Helper initializer for creating a `null` value `RStateComputer<T?>` (e.g. `nullAsStateOf<User>()`).
 - `stateValueOf(T value)`: Functional initializer for a simple value.
 - `stateListOf(List<T> list)`: Functional initializer for a reactive list.
 - `stateMapOf(Map<K, V> map)`: Functional initializer for a reactive map.
