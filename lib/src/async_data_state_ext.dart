@@ -40,14 +40,7 @@ extension AsyncDataStateExt<T> on RState<AsyncData<T>> {
 
   T _getInnerData() {
     if (hasData) {
-      final that = value;
-      if (that is AsyncDataValue<T>) {
-        return that.data;
-      } else if (that is AsyncDataLoading<T>) {
-        return that.data as T;
-      } else if (that is AsyncDataError<T>) {
-        return that.data as T;
-      }
+      return value.data;
     }
     throw StateError('AsyncData<$T> not has data');
   }

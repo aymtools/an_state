@@ -443,7 +443,7 @@ void main() {
           computer: () => comp2(),
           cancellable: Cancellable(),
         );
-        expect(r2.value, AsyncData<int>.value(10));
+        expect(r2.value, AsyncData<int>.data(10));
       });
 
       test('Future, fFactory, fFactory2', () async {
@@ -457,7 +457,7 @@ void main() {
         expect(rFuture.value, AsyncData<int>.loading());
         completer.complete(42);
         await Future.delayed(Duration.zero);
-        expect(rFuture.value, AsyncData<int>.value(42));
+        expect(rFuture.value, AsyncData<int>.data(42));
 
         final compFactory = stateOfAsyncData<int>(
           fFactory: () => Future.value(100),
@@ -468,7 +468,7 @@ void main() {
         );
         expect(rFactory.value, AsyncData<int>.loading());
         await Future.delayed(Duration.zero);
-        expect(rFactory.value, AsyncData<int>.value(100));
+        expect(rFactory.value, AsyncData<int>.data(100));
 
         Cancellable? capturedCancellable;
         final compFactory2 = stateOfAsyncData<int>(
@@ -483,7 +483,7 @@ void main() {
         );
         expect(rFactory2.value, AsyncData<int>.loading());
         await Future.delayed(Duration.zero);
-        expect(rFactory2.value, AsyncData<int>.value(200));
+        expect(rFactory2.value, AsyncData<int>.data(200));
         expect(capturedCancellable, isNotNull);
       });
 
@@ -514,7 +514,7 @@ void main() {
 
         completer2.completeError('error');
         await Future.delayed(Duration.zero);
-        expect(r2.value, AsyncData<int>.value(-1));
+        expect(r2.value, AsyncData<int>.data(-1));
 
         final completer3 = Completer<int>();
         final comp3 = stateOfAsyncData<int>(
@@ -544,11 +544,11 @@ void main() {
 
         controller.add(1);
         await Future.delayed(Duration.zero);
-        expect(rStream.value, AsyncData<int>.value(1));
+        expect(rStream.value, AsyncData<int>.data(1));
 
         controller.add(2);
         await Future.delayed(Duration.zero);
-        expect(rStream.value, AsyncData<int>.value(2));
+        expect(rStream.value, AsyncData<int>.data(2));
 
         controller.close();
 
@@ -564,7 +564,7 @@ void main() {
 
         sController.add(10);
         await Future.delayed(Duration.zero);
-        expect(rSFactory.value, AsyncData<int>.value(10));
+        expect(rSFactory.value, AsyncData<int>.data(10));
         sController.close();
 
         final s2Controller = StreamController<int>();
@@ -583,7 +583,7 @@ void main() {
 
         s2Controller.add(20);
         await Future.delayed(Duration.zero);
-        expect(rSFactory2.value, AsyncData<int>.value(20));
+        expect(rSFactory2.value, AsyncData<int>.data(20));
         expect(capturedCancellable, isNotNull);
         s2Controller.close();
       });
@@ -602,7 +602,7 @@ void main() {
 
         controller.add(1);
         await Future.delayed(Duration.zero);
-        expect(r.value, AsyncData<int>.value(1));
+        expect(r.value, AsyncData<int>.data(1));
 
         controller.addError('stream error');
         await Future.delayed(Duration.zero);
@@ -657,9 +657,9 @@ void main() {
 
         await Future.delayed(Duration.zero);
 
-        expect(r1.value, AsyncData<int>.value(1));
-        expect(r2.value, AsyncData<int>.value(2));
-        expect(r3.value, AsyncData<int>.value(3));
+        expect(r1.value, AsyncData<int>.data(1));
+        expect(r2.value, AsyncData<int>.data(2));
+        expect(r3.value, AsyncData<int>.data(3));
       });
 
       test('explicit cancellable and context disposal', () async {
@@ -680,13 +680,13 @@ void main() {
 
         controller.add(1);
         await Future.delayed(Duration.zero);
-        expect(r.value, AsyncData<int>.value(1));
+        expect(r.value, AsyncData<int>.data(1));
 
         manualCancellable.cancel();
 
         controller.add(2);
         await Future.delayed(Duration.zero);
-        expect(r.value, AsyncData<int>.value(1));
+        expect(r.value, AsyncData<int>.data(1));
 
         controller.close();
       });

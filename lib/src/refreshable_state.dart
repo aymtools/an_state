@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:an_async_data/an_async_data.dart';
 import 'package:an_pager/an_pager.dart';
 import 'package:an_reactive_state/an_reactive_state.dart';
 import 'package:an_state/src/async_data_state_ext.dart';

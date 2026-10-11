@@ -176,7 +176,7 @@ RStateComputer<AsyncData<T>> stateOfAsyncData<T>({
   Cancellable? cancellable,
 }) {
   AsyncData<T> currentValue = initialValue is T
-      ? AsyncData<T>.value(initialValue)
+      ? AsyncData<T>.data(initialValue)
       : AsyncData<T>.loading();
   final init = expensiveComputation(() {
     final curr = BaseState.currentState;
@@ -184,7 +184,7 @@ RStateComputer<AsyncData<T>> stateOfAsyncData<T>({
     final can = curr.disposable.makeCancellable(father: cancellable);
     if (can.isAvailable) {
       void setValue(T value) {
-        currentValue = AsyncData<T>.value(value);
+        currentValue = AsyncData<T>.data(value);
         curr.refresh();
       }
 
