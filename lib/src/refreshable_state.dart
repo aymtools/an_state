@@ -97,16 +97,16 @@ class RefreshableState<T> extends RState<AsyncData<T>> {
 /// 支持分页加载的可刷新响应式状态类。
 ///
 /// 继承自 [RefreshableState]，专门用于管理基于 [BasePager] 的分页列表数据。
-class RefreshablePagerState<T, K, Pager extends BasePager<T, K, Pager>>
+class RefreshablePagerState<T, K, P extends BasePager<T, K, P>>
     extends RefreshableState<List<T>> {
   /// 已加载的所有页面数据列表。
-  final List<Pager> _pages = [];
+  final List<P> _pages = [];
 
   /// 分页数据加载器函数，接收可取消句柄和下一页的 Key。
-  final Future<Pager> Function(Cancellable, K? nextPageKey) _pageLoader;
+  final Future<P> Function(Cancellable, K? nextPageKey) _pageLoader;
 
   /// 获取当前已加载的所有页面对象列表。
-  List<Pager> get pages => _pages;
+  List<P> get pages => _pages;
 
   /// 创建一个 [RefreshablePagerState] 实例。
   ///
@@ -115,8 +115,8 @@ class RefreshablePagerState<T, K, Pager extends BasePager<T, K, Pager>>
   /// [cancellable] 可选的取消句柄。
   /// [equals] 可选的状态值相等性比较器。
   RefreshablePagerState(
-      {required Future<Pager> Function(Cancellable, K?) pageLoader,
-      Pager? first,
+      {required Future<P> Function(Cancellable, K?) pageLoader,
+      P? first,
       super.cancellable,
       super.equals})
       : _pageLoader = pageLoader,
@@ -232,17 +232,17 @@ extension RememberRefreshableStateExt on BuildContext {
       );
 
   /// 在 Widget 树中记住一个可刷新的分页响应式状态 [RefreshablePagerState]。
-  RefreshablePagerState<T, K, Pager>
-      rememberRefreshablePagerState<T, K, Pager extends BasePager<T, K, Pager>>(
-    Future<Pager> Function(Cancellable, K?) pageLoader, {
-    Pager? first,
+  RefreshablePagerState<T, K, P>
+      rememberRefreshablePagerState<T, K, P extends BasePager<T, K, P>>(
+    Future<P> Function(Cancellable, K?) pageLoader, {
+    P? first,
     RStateEquality<AsyncData<List<T>>>? equals,
     String? debugLabel,
     bool listen = true,
   }) {
-    return remember<RefreshablePagerState<T, K, Pager>>(
+    return remember<RefreshablePagerState<T, K, P>>(
       factory3: (l, c) {
-        return RefreshablePagerState<T, K, Pager>(
+        return RefreshablePagerState<T, K, P>(
             pageLoader: pageLoader,
             first: first,
             cancellable: c,
@@ -268,13 +268,13 @@ extension ViewmodelRefreshableStateExt on ViewModel {
           equals: equals);
 
   /// 在 ViewModel 中创建一个可刷新的分页响应式状态 [RefreshablePagerState]。
-  RefreshablePagerState<T, K, Pager>
-      stateRefreshablePagerOf<T, K, Pager extends BasePager<T, K, Pager>>(
-    Future<Pager> Function(Cancellable, K?) pageLoader, {
-    Pager? first,
+  RefreshablePagerState<T, K, P>
+      stateRefreshablePagerOf<T, K, P extends BasePager<T, K, P>>(
+    Future<P> Function(Cancellable, K?) pageLoader, {
+    P? first,
     RStateEquality<AsyncData<List<T>>>? equals,
   }) =>
-          RefreshablePagerState<T, K, Pager>(
+          RefreshablePagerState<T, K, P>(
               pageLoader: pageLoader,
               first: first,
               cancellable: makeLiveCancellable(),
