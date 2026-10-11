@@ -36,7 +36,7 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  an_state: ^1.3.1
+  an_state: ^1.4.0
 ```
 
 ### Mandatory Lifecycle Setup
@@ -192,6 +192,18 @@ Convenient extensions on `RState<AsyncData<T>>`:
     - `toDataErrorRaw(T data, Object error, [StackTrace? st])`: Sets state to
       `AsyncData.dataError(data, error, st)`.
 
+### Refreshable & Paginated States
+
+- **`RefreshableState<T>`**: Extends `RState<AsyncData<T>>` for managing refreshable async data.
+    - `refreshData({Cancellable? cancellable})`: Clears state to `loading` and reloads data.
+    - `reloadData({Cancellable? cancellable})`: Keeps previous data (`dataLoading`) while reloading.
+
+- **`RefreshablePagerState<T, K, Pager>`**: Extends `RefreshableState<List<T>>` for managing paginated data using [an_pager](https://pub.dev/packages/an_pager).
+    - `loadNextPage({Cancellable? cancellable})`: Fetches the next page using the last page's `nextPageKey` and appends data.
+    - `refreshData({Cancellable? cancellable})`: Clears pages and reloads the first page.
+    - `reloadData({Cancellable? cancellable})`: Keeps previous data (`dataLoading`) while reloading the first page.
+    - `pages`: Getter for all loaded page instances (`List<Pager>`).
+
 ### Optimization
 
 - `expensiveComputation(Computer<T> computer)`: Ensures a heavy calculation or registration logic
@@ -230,9 +242,12 @@ directly:
 | `stateOfAsync(...)`              | `Utility`      | Converts a Future or Stream into a reactive computer.                                                                                  |
 | `stateOfAsyncData(...)`          | `Utility`      | Converts a Future or Stream into a reactive `AsyncData<T>` computer.                                                                   |
 | `AsyncDataStateExt`              | `Extension`    | Convenience methods on `RState<AsyncData<T>>` for checking and mutating async states (`toData`, `toDataLoading`, `toDataError`, etc.). |
+| `RefreshableState`               | `Class`        | Reactive state class for refreshable async data with `refreshData()` and `reloadData()`.                                                |
+| `RefreshablePagerState`          | `Class`        | Reactive state class for paginated refreshable data with `loadNextPage()`, `refreshData()`, and `reloadData()`.                       |
 
 ---
 
-## 📄 License
+## Issues
 
-This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+If you encounter issues, here are some tips for debug, if nothing helps report
+to [issue tracker on GitHub](https://github.com/aymtools/an_state/issues):

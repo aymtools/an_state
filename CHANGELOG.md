@@ -1,3 +1,10 @@
+## 1.4.0
+
+* Add `RefreshableState<T>` for refreshable async data state management with `refreshData()` and
+  `reloadData()`
+* Add `RefreshablePagerState<T, K, Pager>` for paginated refreshable state management with
+  `loadNextPage()`, `refreshData()`, `reloadData()`, and `pages` getter
+
 ## 1.3.1
 
 * Add `asNullableStateOf` extension getter for `Map` and `ValueNotifier`
@@ -5,10 +12,12 @@
 
 ## 1.3.0
 
-* Add extension getters (`asStateOf`, `asNullableStateOf`) for `Object`, `List`, `Set`, `Map`, and `ValueNotifier`
+* Add extension getters (`asStateOf`, `asNullableStateOf`) for `Object`, `List`, `Set`, `Map`, and
+  `ValueNotifier`
 * Refactor `stateOfValueNotifier` parameter from required named parameter to positional parameter
 * Upgrade `an_reactive_state` to `^1.2.0`
-* Make `cancellable` parameter optional across `BaseState`, `RState`, `ComputedState`, and `effect()`
+* Make `cancellable` parameter optional across `BaseState`, `RState`, `ComputedState`, and
+  `effect()`
 
 ## 1.2.0
 

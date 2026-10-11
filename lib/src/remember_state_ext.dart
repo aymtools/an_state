@@ -1,5 +1,7 @@
 import 'package:an_reactive_state/an_reactive_state.dart';
 import 'package:an_state/src/tools.dart';
+import 'package:anlifecycle/anlifecycle.dart';
+import 'package:cancellable/cancellable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:remember/remember.dart';
 
@@ -21,13 +23,7 @@ extension RememberStateExt on BuildContext {
       factory3: (l, c) {
         return RState(initialValue: computer(), cancellable: c, equals: equals);
       },
-      onCreate: listen
-          ? (d, l, c) {
-              // 绑定 Element 刷新逻辑
-              d.addListener(
-                  safeMarkNeedsBuildVoidListener(this, cancellable: c));
-            }
-          : null,
+      onCreate: listen ? onCreateListen : null,
       key: 'rememberMutableState',
     );
   }
@@ -47,13 +43,7 @@ extension RememberStateExt on BuildContext {
         return ComputedState(
             computer: computer, cancellable: c, equals: equals);
       },
-      onCreate: listen
-          ? (d, l, c) {
-              // 绑定 Element 刷新逻辑
-              d.addListener(
-                  safeMarkNeedsBuildVoidListener(this, cancellable: c));
-            }
-          : null,
+      onCreate: listen ? onCreateListen : null,
       key: 'rememberState',
     );
   }
@@ -67,10 +57,7 @@ extension RememberStateExt on BuildContext {
   T listenReactiveState<T>(BaseState<T> state) {
     return remember<BaseState<T>>(
       factory: () => state,
-      onCreate: (d, l, c) {
-        // 绑定 Element 刷新逻辑
-        d.addListener(safeMarkNeedsBuildVoidListener(this, cancellable: c));
-      },
+      onCreate: onCreateListen,
       key: 'listenReactiveState',
     ).value;
   }
@@ -88,4 +75,12 @@ extension RememberStateExt on BuildContext {
       },
     );
   }
+}
+
+extension RememberStateOnCreateListenExt on BuildContext {
+  void Function(BaseState<dynamic> state, Lifecycle lifecycle,
+      Cancellable cancellable) get onCreateListen => (BaseState<dynamic> state,
+          Lifecycle lifecycle, Cancellable cancellable) =>
+      state.addListener(
+          safeMarkNeedsBuildVoidListener(this, cancellable: cancellable));
 }
