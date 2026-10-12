@@ -1,9 +1,16 @@
+## 1.4.1
+
+* Add `autoLoad` parameter (`true`: `reloadData()`, `false`: `refreshData()`, `null`: disable) to
+  `RefreshableState` and `RefreshablePagerState`
+
 ## 1.4.0
 
 * Add `RefreshableState<T>` for refreshable async data state management with `refreshData()` and
   `reloadData()`
 * Add `RefreshablePagerState<T, K, Pager>` for paginated refreshable state management with
   `loadNextPage()`, `refreshData()`, `reloadData()`, and `pages` getter
+* Add `rememberRefreshableState` and `rememberRefreshablePagerState` extensions on `BuildContext`
+* Add `stateRefreshableOf` and `stateRefreshablePagerOf` extensions on `ViewModel`
 
 ## 1.3.1
 

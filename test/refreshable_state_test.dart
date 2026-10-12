@@ -7,10 +7,69 @@ import 'package:cancellable/cancellable.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('RefreshableState autoLoad', () {
+    // 验证 autoLoad 为 true 时在 microtask 中自动调用 reloadData
+    test('autoLoad true triggers reloadData automatically', () async {
+      final completer = Completer<int>();
+      final state = RefreshableState<int>(
+        autoLoad: true,
+        reloader: (_) => completer.future,
+      );
+
+      expect(state.isLoading, isTrue);
+      completer.complete(42);
+
+      await Future.microtask(() {});
+      await Future.delayed(Duration.zero);
+
+      expect(state.hasData, isTrue);
+      expect(state.data, 42);
+    });
+
+    // 验证 autoLoad 为 false 时在 microtask 中自动调用 refreshData
+    test('autoLoad false triggers refreshData automatically', () async {
+      final completer = Completer<int>();
+      final state = RefreshableState<int>(
+        initialValue: 100,
+        autoLoad: false,
+        reloader: (_) => completer.future,
+      );
+
+      // 初始数据 100，当 refreshData 被 microtask 触发时，状态会被清理重置为 loading
+      await Future.microtask(() {});
+      expect(state.isLoading, isTrue);
+      expect(state.hasData, isFalse);
+
+      completer.complete(200);
+      await Future.delayed(Duration.zero);
+
+      expect(state.data, 200);
+    });
+
+    // 验证 autoLoad 为 null 时不自动触发加载
+    test('autoLoad null does not trigger automatic loading', () async {
+      int callCount = 0;
+      final state = RefreshableState<int>(
+        autoLoad: null,
+        reloader: (_) async {
+          callCount++;
+          return 99;
+        },
+      );
+
+      await Future.microtask(() {});
+      await Future.delayed(Duration.zero);
+
+      expect(callCount, 0);
+      expect(state.isLoading, isTrue);
+    });
+  });
+
   group('RefreshableState', () {
     // 验证初始状态：未指定 initialValue 时默认为 loading，指定时为 data
     test('initialValue default vs specified', () {
       final state1 = RefreshableState<int>(
+        autoLoad: null,
         reloader: (_) async => 42,
       );
       expect(state1.value, AsyncData<int>.loading());
@@ -18,6 +77,7 @@ void main() {
 
       final state2 = RefreshableState<int>(
         initialValue: 100,
+        autoLoad: null,
         reloader: (_) async => 42,
       );
       expect(state2.value, AsyncData<int>.data(100));
@@ -29,6 +89,7 @@ void main() {
     test('refreshData success path', () async {
       final completer = Completer<int>();
       final state = RefreshableState<int>(
+        autoLoad: null,
         reloader: (c) => completer.future,
       );
 
@@ -46,6 +107,7 @@ void main() {
     // 验证 refreshData 执行发生错误时的状态流转
     test('refreshData error path', () async {
       final state = RefreshableState<int>(
+        autoLoad: null,
         reloader: (_) async => throw Exception('Fetch failed'),
       );
 
@@ -61,6 +123,7 @@ void main() {
       final completers = <Completer<int>>[Completer<int>(), Completer<int>()];
 
       final state = RefreshableState<int>(
+        autoLoad: null,
         reloader: (c) {
           final index = callCount++;
           return completers[index].future;
@@ -82,6 +145,7 @@ void main() {
     test('reloadData when initial state is empty vs when state has data', () async {
       final completer1 = Completer<int>();
       final state = RefreshableState<int>(
+        autoLoad: null,
         reloader: (_) => completer1.future,
       );
 
@@ -95,6 +159,7 @@ void main() {
       final completer2 = Completer<int>();
       final state2 = RefreshableState<int>(
         initialValue: 10,
+        autoLoad: null,
         reloader: (_) => completer2.future,
       );
 
@@ -112,6 +177,7 @@ void main() {
     test('reloadData error path preserves old data in dataError', () async {
       final state = RefreshableState<int>(
         initialValue: 100,
+        autoLoad: null,
         reloader: (_) async => throw Exception('Reload error'),
       );
 
@@ -130,6 +196,7 @@ void main() {
       final completer = Completer<int>();
 
       final state = RefreshableState<int>(
+        autoLoad: null,
         reloader: (_) => completer.future,
       );
 
@@ -144,11 +211,35 @@ void main() {
     });
   });
 
+  group('RefreshablePagerState autoLoad', () {
+    // 验证 RefreshablePagerState 支持 autoLoad 自动初始化分页数据
+    test('RefreshablePagerState autoLoad true triggers reloadData', () async {
+      final completer = Completer<KPage<String, int>>();
+      final pagerState =
+          RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: true,
+        pageLoader: (can, key) => completer.future,
+      );
+
+      expect(pagerState.isLoading, isTrue);
+      completer.complete(
+        KPage(data: ['auto_item'], hasPrevious: false, hasNext: true, nextPageKey: 1),
+      );
+
+      await Future.microtask(() {});
+      await Future.delayed(Duration.zero);
+
+      expect(pagerState.data, ['auto_item']);
+      expect(pagerState.pages.length, 1);
+    });
+  });
+
   group('RefreshablePagerState', () {
     // 验证分页状态的初始值以及是否指定首页数据
     test('initialValue default vs with first page', () {
       final pagerState1 =
           RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: null,
         pageLoader: (_, key) async => KPage(
             data: ['a'], hasPrevious: false, hasNext: true, nextPageKey: 1),
       );
@@ -162,6 +253,7 @@ void main() {
           nextPageKey: 1);
       final pagerState2 =
           RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: null,
         pageLoader: (_, key) async => KPage(
             data: ['a'], hasPrevious: false, hasNext: true, nextPageKey: 2),
         first: firstPage,
@@ -174,6 +266,7 @@ void main() {
     test('refreshData loads first page and populates pages', () async {
       final pagerState =
           RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: null,
         pageLoader: (can, key) async {
           expect(key, isNull);
           return KPage(
@@ -195,6 +288,7 @@ void main() {
     test('loadNextPage appends new page data', () async {
       final pagerState =
           RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: null,
         pageLoader: (can, key) async {
           if (key == null) {
             return KPage(
@@ -225,6 +319,7 @@ void main() {
     test('loadNextPage error handling', () async {
       final pagerState =
           RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: null,
         pageLoader: (can, key) async {
           if (key == null) {
             return KPage(
@@ -254,6 +349,7 @@ void main() {
       int fetchCount = 0;
       final pagerState =
           RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: null,
         pageLoader: (can, key) async {
           fetchCount++;
           if (fetchCount == 1) {
@@ -286,6 +382,7 @@ void main() {
     test('refreshData error state in pager', () async {
       final pagerState =
           RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: null,
         pageLoader: (_, __) async => throw Exception('Pager refresh error'),
       );
 
@@ -301,6 +398,7 @@ void main() {
       int count = 0;
       final pagerState =
           RefreshablePagerState<String, int, KPage<String, int>>(
+        autoLoad: null,
         pageLoader: (_, __) async {
           count++;
           if (count == 1) {

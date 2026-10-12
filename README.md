@@ -36,7 +36,7 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  an_state: ^1.4.0
+  an_state: ^1.4.1
 ```
 
 ### Mandatory Lifecycle Setup
@@ -195,6 +195,7 @@ Convenient extensions on `RState<AsyncData<T>>`:
 ### Refreshable & Paginated States
 
 - **`RefreshableState<T>`**: Extends `RState<AsyncData<T>>` for managing refreshable async data.
+    - Constructor accepts `autoLoad` (`true`: triggers `reloadData()`, `false`: triggers `refreshData()`, `null`: disables automatic loading; defaults to `true`).
     - `refreshData({Cancellable? cancellable})`: Clears state to `loading` and reloads data.
     - `reloadData({Cancellable? cancellable})`: Keeps previous data (`dataLoading`) while reloading.
 
@@ -203,6 +204,20 @@ Convenient extensions on `RState<AsyncData<T>>`:
     - `refreshData({Cancellable? cancellable})`: Clears pages and reloads the first page.
     - `reloadData({Cancellable? cancellable})`: Keeps previous data (`dataLoading`) while reloading the first page.
     - `pages`: Getter for all loaded page instances (`List<Pager>`).
+
+- **ViewModel Extensions**: Use `stateRefreshableOf` and `stateRefreshablePagerOf` in ViewModels.
+  ```dart
+  class FeedViewModel extends ViewModel {
+    late final userState = stateRefreshableOf((c) => fetchUser(c), autoLoad: true);
+    late final feedState = stateRefreshablePagerOf((c, pageKey) => fetchFeed(pageKey, c));
+  }
+  ```
+
+- **BuildContext Extensions**: Use `context.rememberRefreshableState` and `context.rememberRefreshablePagerState` in Widgets.
+  ```dart
+  final userState = context.rememberRefreshableState((c) => fetchUser(c));
+  final feedState = context.rememberRefreshablePagerState((c, pageKey) => fetchFeed(pageKey, c));
+  ```
 
 ### Optimization
 
@@ -242,8 +257,12 @@ directly:
 | `stateOfAsync(...)`              | `Utility`      | Converts a Future or Stream into a reactive computer.                                                                                  |
 | `stateOfAsyncData(...)`          | `Utility`      | Converts a Future or Stream into a reactive `AsyncData<T>` computer.                                                                   |
 | `AsyncDataStateExt`              | `Extension`    | Convenience methods on `RState<AsyncData<T>>` for checking and mutating async states (`toData`, `toDataLoading`, `toDataError`, etc.). |
-| `RefreshableState`               | `Class`        | Reactive state class for refreshable async data with `refreshData()` and `reloadData()`.                                                |
-| `RefreshablePagerState`          | `Class`        | Reactive state class for paginated refreshable data with `loadNextPage()`, `refreshData()`, and `reloadData()`.                       |
+| `RefreshableState`               | `Class`        | Reactive state class for refreshable async data with `refreshData()`, `reloadData()`, and `autoLoad`.                                   |
+| `RefreshablePagerState`          | `Class`        | Reactive state class for paginated refreshable data with `loadNextPage()`, `refreshData()`, `reloadData()`, and `autoLoad`.          |
+| `rememberRefreshableState`       | `BuildContext` | Remembers a `RefreshableState` in the widget tree.                                                                                      |
+| `rememberRefreshablePagerState`  | `BuildContext` | Remembers a `RefreshablePagerState` in the widget tree.                                                                                 |
+| `stateRefreshableOf`             | `ViewModel`    | Creates a `RefreshableState` bound to ViewModel.                                                                                        |
+| `stateRefreshablePagerOf`        | `ViewModel`    | Creates a `RefreshablePagerState` bound to ViewModel.                                                                                   |
 
 ---
 

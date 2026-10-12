@@ -32,16 +32,24 @@ class RefreshableState<T> extends RState<AsyncData<T>> {
   /// [reloader] 为异步数据加载逻辑。
   /// [cancellable] 可选的取消句柄，绑定当前状态的生命周期。
   /// [equals] 可选的状态值相等性比较器。
+  /// [autoLoad] 是否自动加载数据，默认为 `true`。[true]: 重新加载数据；[false]: 刷新数据；[null]: 不自动加载。
   RefreshableState({
     T? initialValue,
     required Future<T> Function(Cancellable) reloader,
     super.cancellable,
     super.equals,
+    bool? autoLoad = true,
   })  : _reloader = reloader,
         super(
             initialValue: initialValue == null
                 ? AsyncData<T>.loading()
-                : AsyncData<T>.data(initialValue));
+                : AsyncData<T>.data(initialValue)) {
+    if (autoLoad == true) {
+      Future.microtask(reloadData);
+    } else if (autoLoad == false) {
+      Future.microtask(refreshData);
+    }
+  }
 
   /// 重新刷新整个内容，清理旧数据。
   ///
@@ -114,12 +122,14 @@ class RefreshablePagerState<T, K, P extends BasePager<T, K, P>>
   /// [first] 可选的首页数据。
   /// [cancellable] 可选的取消句柄。
   /// [equals] 可选的状态值相等性比较器。
-  RefreshablePagerState(
-      {required Future<P> Function(Cancellable, K?) pageLoader,
-      P? first,
-      super.cancellable,
-      super.equals})
-      : _pageLoader = pageLoader,
+  /// [autoLoad] 是否自动加载首页数据，默认为 `true`。[true]: 重新加载数据；[false]: 刷新数据；[null]: 不自动加载。
+  RefreshablePagerState({
+    required Future<P> Function(Cancellable, K?) pageLoader,
+    P? first,
+    super.cancellable,
+    super.equals,
+    super.autoLoad = true,
+  })  : _pageLoader = pageLoader,
         super(
             reloader: (_) async => Completer<List<T>>().future,
             initialValue: first?.data);
@@ -216,6 +226,7 @@ extension RememberRefreshableStateExt on BuildContext {
     Future<T> Function(Cancellable) reloader, {
     T? initialValue,
     RStateEquality<AsyncData<T>>? equals,
+    bool? autoLoad = true,
     String? debugLabel,
     bool listen = true,
   }) =>
@@ -225,7 +236,8 @@ extension RememberRefreshableStateExt on BuildContext {
               reloader: reloader,
               initialValue: initialValue,
               cancellable: c,
-              equals: equals);
+              equals: equals,
+              autoLoad: autoLoad);
         },
         onCreate: listen ? onCreateListen : null,
         key: 'rememberRefreshableState',
@@ -237,6 +249,7 @@ extension RememberRefreshableStateExt on BuildContext {
     Future<P> Function(Cancellable, K?) pageLoader, {
     P? first,
     RStateEquality<AsyncData<List<T>>>? equals,
+    bool? autoLoad = true,
     String? debugLabel,
     bool listen = true,
   }) {
@@ -246,7 +259,8 @@ extension RememberRefreshableStateExt on BuildContext {
             pageLoader: pageLoader,
             first: first,
             cancellable: c,
-            equals: equals);
+            equals: equals,
+            autoLoad: autoLoad);
       },
       onCreate: listen ? onCreateListen : null,
       key: 'rememberRefreshablePagerState',
