@@ -36,7 +36,7 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  an_state: ^1.4.1
+  an_state: ^1.4.2
 ```
 
 ### Mandatory Lifecycle Setup

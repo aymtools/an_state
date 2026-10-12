@@ -12,10 +12,10 @@ import 'package:remember/remember.dart';
 
 /// 可刷新的响应式状态类，封装了异步数据 [AsyncData] 的刷新和重新加载操作。
 ///
-/// 适用于需要支持下拉刷新、重新加载等功能的异步数据状态管理。
+/// 适用于需要支持下拉刷新、重新加载等功能的数据状态管理。
 class RefreshableState<T> extends RState<AsyncData<T>> {
-  /// 数据加载器函数，用于异步获取数据。
-  final Future<T> Function(Cancellable) _reloader;
+  /// 数据加载器函数，用于获取数据。
+  final FutureOr<T> Function(Cancellable) _reloader;
 
   /// 用于取消当前重新加载任务的可取消句柄。
   Cancellable? _reloading;
@@ -35,7 +35,7 @@ class RefreshableState<T> extends RState<AsyncData<T>> {
   /// [autoLoad] 是否自动加载数据，默认为 `true`。[true]: 重新加载数据；[false]: 刷新数据；[null]: 不自动加载。
   RefreshableState({
     T? initialValue,
-    required Future<T> Function(Cancellable) reloader,
+    required FutureOr<T> Function(Cancellable) reloader,
     super.cancellable,
     super.equals,
     bool? autoLoad = true,
@@ -111,7 +111,7 @@ class RefreshablePagerState<T, K, P extends BasePager<T, K, P>>
   final List<P> _pages = [];
 
   /// 分页数据加载器函数，接收可取消句柄和下一页的 Key。
-  final Future<P> Function(Cancellable, K? nextPageKey) _pageLoader;
+  final FutureOr<P> Function(Cancellable, K? nextPageKey) _pageLoader;
 
   /// 获取当前已加载的所有页面对象列表。
   List<P> get pages => _pages;
@@ -124,7 +124,7 @@ class RefreshablePagerState<T, K, P extends BasePager<T, K, P>>
   /// [equals] 可选的状态值相等性比较器。
   /// [autoLoad] 是否自动加载首页数据，默认为 `true`。[true]: 重新加载数据；[false]: 刷新数据；[null]: 不自动加载。
   RefreshablePagerState({
-    required Future<P> Function(Cancellable, K?) pageLoader,
+    required FutureOr<P> Function(Cancellable, K?) pageLoader,
     P? first,
     super.cancellable,
     super.equals,
@@ -223,7 +223,7 @@ class RefreshablePagerState<T, K, P extends BasePager<T, K, P>>
 extension RememberRefreshableStateExt on BuildContext {
   /// 在 Widget 树中记住一个可刷新的响应式状态 [RefreshableState]。
   RefreshableState<T> rememberRefreshableState<T>(
-    Future<T> Function(Cancellable) reloader, {
+    FutureOr<T> Function(Cancellable) reloader, {
     T? initialValue,
     RStateEquality<AsyncData<T>>? equals,
     bool? autoLoad = true,
@@ -246,7 +246,7 @@ extension RememberRefreshableStateExt on BuildContext {
   /// 在 Widget 树中记住一个可刷新的分页响应式状态 [RefreshablePagerState]。
   RefreshablePagerState<T, K, P>
       rememberRefreshablePagerState<T, K, P extends BasePager<T, K, P>>(
-    Future<P> Function(Cancellable, K?) pageLoader, {
+    FutureOr<P> Function(Cancellable, K?) pageLoader, {
     P? first,
     RStateEquality<AsyncData<List<T>>>? equals,
     bool? autoLoad = true,
@@ -271,26 +271,30 @@ extension RememberRefreshableStateExt on BuildContext {
 extension ViewmodelRefreshableStateExt on ViewModel {
   /// 在 ViewModel 中创建一个可刷新的响应式状态 [RefreshableState]。
   RefreshableState<T> stateRefreshableOf<T>(
-    Future<T> Function(Cancellable) reloader, {
+    FutureOr<T> Function(Cancellable) reloader, {
     T? initialValue,
     RStateEquality<AsyncData<T>>? equals,
+    bool? autoLoad = true,
   }) =>
       RefreshableState<T>(
           reloader: reloader,
           initialValue: initialValue,
           cancellable: makeLiveCancellable(),
-          equals: equals);
+          equals: equals,
+          autoLoad: autoLoad);
 
   /// 在 ViewModel 中创建一个可刷新的分页响应式状态 [RefreshablePagerState]。
   RefreshablePagerState<T, K, P>
       stateRefreshablePagerOf<T, K, P extends BasePager<T, K, P>>(
-    Future<P> Function(Cancellable, K?) pageLoader, {
+    FutureOr<P> Function(Cancellable, K?) pageLoader, {
     P? first,
     RStateEquality<AsyncData<List<T>>>? equals,
+    bool? autoLoad = true,
   }) =>
           RefreshablePagerState<T, K, P>(
               pageLoader: pageLoader,
               first: first,
               cancellable: makeLiveCancellable(),
-              equals: equals);
+              equals: equals,
+              autoLoad: autoLoad);
 }

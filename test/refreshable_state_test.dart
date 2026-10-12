@@ -66,6 +66,19 @@ void main() {
   });
 
   group('RefreshableState', () {
+    // 验证 FutureOr 数据加载器支持同步返回值
+    test('FutureOr reloader supports synchronous return values', () async {
+      final state = RefreshableState<int>(
+        autoLoad: null,
+        reloader: (_) => 123,
+      );
+
+      await state.refreshData();
+
+      expect(state.hasData, isTrue);
+      expect(state.data, 123);
+    });
+
     // 验证初始状态：未指定 initialValue 时默认为 loading，指定时为 data
     test('initialValue default vs specified', () {
       final state1 = RefreshableState<int>(

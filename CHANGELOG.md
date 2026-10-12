@@ -1,3 +1,8 @@
+## 1.4.2
+
+* Support `FutureOr` return type in `reloader` and `pageLoader` functions for `RefreshableState` and
+  `RefreshablePagerState`
+
 ## 1.4.1
 
 * Add `autoLoad` parameter (`true`: `reloadData()`, `false`: `refreshData()`, `null`: disable) to
