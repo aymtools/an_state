@@ -8,8 +8,7 @@ extension AsStateComputationObjectExt<T extends Object> on T {
   /// 将当前对象转换为非空的 [RStateComputer] 计算闭包。
   ///
   /// 内部通过 [expensiveComputation] 包装，确保计算和求值只执行一次。
-  RStateComputer<T> get asStateComputation =>
-      expensiveComputation(() => this);
+  RStateComputer<T> get asStateComputation => expensiveComputation(() => this);
 
   /// 将当前对象转换为可空的 [RStateComputer<T?>] 计算闭包。
   RStateComputer<T?> get asNullableStateComputation =>
@@ -21,8 +20,7 @@ extension AsStateComputationValueNotifierExt<T> on ValueNotifier<T> {
   /// 将 [ValueNotifier] 转换为 [RStateComputer] 计算闭包。
   ///
   /// 当 [ValueNotifier] 的值发生变化时，会自动触发当前响应式上下文的刷新。
-  RStateComputer<T> get asStateComputation =>
-      valueNotifierComputation<T>(this);
+  RStateComputer<T> get asStateComputation => valueNotifierComputation<T>(this);
 
   /// 将 [ValueNotifier] 转换为可空的 [RStateComputer<T?>] 计算闭包。
   ///

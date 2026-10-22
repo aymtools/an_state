@@ -101,30 +101,35 @@ RStateOf<RState<T?>> nullAsStateMutableOf<T>() => stateMutableOf<T?>(null);
 /// 为 [bool] 提供转换为响应式状态工厂的便捷扩展。
 extension BoolAsStateExt on bool {
   RStateOf<ComputedState<bool>> get asStateOf => stateOf<bool>(() => this);
+
   RStateOf<RState<bool>> get asStateMutableOf => stateMutableOf<bool>(this);
 }
 
 /// 为 [int] 提供转换为响应式状态工厂的便捷扩展。
 extension IntAsStateExt on int {
   RStateOf<ComputedState<int>> get asStateOf => stateOf<int>(() => this);
+
   RStateOf<RState<int>> get asStateMutableOf => stateMutableOf<int>(this);
 }
 
 /// 为 [double] 提供转换为响应式状态工厂的便捷扩展。
 extension DoubleAsStateExt on double {
   RStateOf<ComputedState<double>> get asStateOf => stateOf<double>(() => this);
+
   RStateOf<RState<double>> get asStateMutableOf => stateMutableOf<double>(this);
 }
 
 /// 为 [num] 提供转换为响应式状态工厂的便捷扩展。
 extension NumAsStateExt on num {
   RStateOf<ComputedState<num>> get asStateOf => stateOf<num>(() => this);
+
   RStateOf<RState<num>> get asStateMutableOf => stateMutableOf<num>(this);
 }
 
 /// 为 [String] 提供转换为响应式状态工厂的便捷扩展。
 extension StringAsStateExt on String {
   RStateOf<ComputedState<String>> get asStateOf => stateOf<String>(() => this);
+
   RStateOf<RState<String>> get asStateMutableOf => stateMutableOf<String>(this);
 }
 
@@ -132,6 +137,7 @@ extension StringAsStateExt on String {
 extension DateTimeAsStateExt on DateTime {
   RStateOf<ComputedState<DateTime>> get asStateOf =>
       stateOf<DateTime>(() => this);
+
   RStateOf<RState<DateTime>> get asStateMutableOf =>
       stateMutableOf<DateTime>(this);
 }
@@ -140,6 +146,7 @@ extension DateTimeAsStateExt on DateTime {
 extension DurationAsStateExt on Duration {
   RStateOf<ComputedState<Duration>> get asStateOf =>
       stateOf<Duration>(() => this);
+
   RStateOf<RState<Duration>> get asStateMutableOf =>
       stateMutableOf<Duration>(this);
 }
@@ -148,6 +155,7 @@ extension DurationAsStateExt on Duration {
 extension MapEntryAsStateExt<K, V> on MapEntry<K, V> {
   RStateOf<ComputedState<MapEntry<K, V>>> get asStateOf =>
       stateOf<MapEntry<K, V>>(() => this);
+
   RStateOf<RState<MapEntry<K, V>>> get asStateMutableOf =>
       stateMutableOf<MapEntry<K, V>>(this);
 }

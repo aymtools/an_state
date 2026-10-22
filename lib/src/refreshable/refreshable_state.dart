@@ -276,4 +276,3 @@ RStateOf<RefreshablePagerState<T, K, P>>
             cancellable: cancellable,
             equals: equals,
             autoLoad: autoLoad);
-

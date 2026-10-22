@@ -19,7 +19,7 @@ dependencies:
   an_lifecycle_cancellable: ^2.6.1
   an_viewmodel: ^3.8.0
   remember: ^2.8.0
-  collection: ^1.18.0
+  collection: ^1.17.1
 
 dev_dependencies:
   flutter_test:
