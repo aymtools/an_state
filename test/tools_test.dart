@@ -22,10 +22,10 @@ void main() {
       expect(callCount, 1);
     });
 
-    test('stateOfValueNotifier should observe changes', () {
+    test('valueNotifierComputation should observe changes', () {
       final notifier = ValueNotifier(0);
       int computeCount = 0;
-      final computer = stateOfValueNotifier(notifier);
+      final computer = valueNotifierComputation(notifier);
       final reactive = ComputedState(
         computer: () {
           computeCount++;
@@ -43,10 +43,10 @@ void main() {
       expect(computeCount, 2);
     });
 
-    test('stateOfChangeNotifier should observe changes', () {
+    test('changeNotifierComputation should observe changes', () {
       final notifier = ValueNotifier(0); // ValueNotifier is a ChangeNotifier
       int computeCount = 0;
-      final computer = stateOfChangeNotifier(
+      final computer = changeNotifierComputation(
         changeNotifier: notifier,
         computer: (cn) => cn.value,
       );
@@ -66,10 +66,10 @@ void main() {
       expect(computeCount, 2);
     });
 
-    test('stateOfAsync (Future) should observe changes', () async {
+    test('asyncComputation (Future) should observe changes', () async {
       final completer = Completer<int>();
       int computeCount = 0;
-      final computer = stateOfAsync(
+      final computer = asyncComputation(
         future: completer.future,
         initialValue: 0,
       );
@@ -91,10 +91,10 @@ void main() {
       expect(computeCount, 2);
     });
 
-    test('stateOfAsync (Future Error) should handle error', () async {
+    test('asyncComputation (Future Error) should handle error', () async {
       final completer = Completer<int>();
       Object? capturedError;
-      final computer = stateOfAsync<int>(
+      final computer = asyncComputation<int>(
         future: completer.future,
         initialValue: 0,
         onError: (e, s) {
@@ -117,10 +117,10 @@ void main() {
       expect(reactive.value, -1);
     });
 
-    test('stateOfAsync (Stream) should observe changes', () async {
+    test('asyncComputation (Stream) should observe changes', () async {
       final controller = StreamController<int>();
       int computeCount = 0;
-      final computer = stateOfAsync(
+      final computer = asyncComputation(
         stream: controller.stream,
         initialValue: 0,
       );
@@ -149,10 +149,10 @@ void main() {
       controller.close();
     });
 
-    test('stateOfAsync (Stream Error) should handle error', () async {
+    test('asyncComputation (Stream Error) should handle error', () async {
       final controller = StreamController<int>();
       Object? capturedError;
-      final computer = stateOfAsync<int>(
+      final computer = asyncComputation<int>(
         stream: controller.stream,
         initialValue: 0,
         onError: (e, s) {
@@ -175,10 +175,10 @@ void main() {
       controller.close();
     });
 
-    test('stateOfAsync (Stream cancelOnError: true)', () async {
+    test('asyncComputation (Stream cancelOnError: true)', () async {
       final controller = StreamController<int>();
       int errorCount = 0;
-      final computer = stateOfAsync<int>(
+      final computer = asyncComputation<int>(
         stream: controller.stream,
         initialValue: 0,
         cancelOnError: true,
@@ -210,9 +210,9 @@ void main() {
       controller.close();
     });
 
-    test('stateOfAsync onError signatures', () async {
+    test('asyncComputation onError signatures', () async {
       final c1 = Completer<int>();
-      final comp1 = stateOfAsync<int>(
+      final comp1 = asyncComputation<int>(
           future: c1.future, initialValue: 0, onError: () => 1);
       final r1 = ComputedState(
         computer: () => comp1(),
@@ -221,7 +221,7 @@ void main() {
       expect(r1.value, 0); // Start subscription
 
       final c2 = Completer<int>();
-      final comp2 = stateOfAsync<int>(
+      final comp2 = asyncComputation<int>(
           future: c2.future, initialValue: 0, onError: (e) => 2);
       final r2 = ComputedState(
         computer: () => comp2(),
@@ -230,7 +230,7 @@ void main() {
       expect(r2.value, 0); // Start subscription
 
       final c3 = Completer<int>();
-      final comp3 = stateOfAsync<int>(
+      final comp3 = asyncComputation<int>(
           future: c3.future, initialValue: 0, onError: (e, s) => 3);
       final r3 = ComputedState(
         computer: () => comp3(),
@@ -249,9 +249,9 @@ void main() {
       expect(r3.value, 3);
     });
 
-    test('stateOfAsync with already completed future', () async {
+    test('asyncComputation with already completed future', () async {
       final completer = Completer<int>()..complete(42);
-      final computer = stateOfAsync<int>(
+      final computer = asyncComputation<int>(
         future: completer.future,
         initialValue: 0,
       );
@@ -266,10 +266,10 @@ void main() {
       expect(reactive.value, 42);
     });
 
-    test('stateOfAsync outside of reactive context should not subscribe',
+    test('asyncComputation outside of reactive context should not subscribe',
         () async {
       final controller = StreamController<int>();
-      final computer = stateOfAsync<int>(
+      final computer = asyncComputation<int>(
         stream: controller.stream,
         initialValue: 0,
       );
@@ -287,10 +287,10 @@ void main() {
     });
 
     test(
-        'stateOfAsync should return current value without triggering new subscriptions',
+        'asyncComputation should return current value without triggering new subscriptions',
         () async {
       final controller = StreamController<int>();
-      final computer = stateOfAsync<int>(
+      final computer = asyncComputation<int>(
         stream: controller.stream,
         initialValue: 0,
       );
@@ -313,13 +313,13 @@ void main() {
       controller.close();
     });
 
-    test('stateOfAsync should cancel subscription when context is disposed',
+    test('asyncComputation should cancel subscription when context is disposed',
         () async {
       final controller = StreamController<int>();
       int computeCount = 0;
       final cancellable = Cancellable();
 
-      final computer = stateOfAsync(
+      final computer = asyncComputation(
         stream: controller.stream,
         initialValue: 0,
       );
@@ -352,11 +352,11 @@ void main() {
       controller.close();
     });
 
-    test('stateOfAsync with explicit cancellable', () async {
+    test('asyncComputation with explicit cancellable', () async {
       final controller = StreamController<int>();
       final manualCancellable = Cancellable();
 
-      final computer = stateOfAsync(
+      final computer = asyncComputation(
         stream: controller.stream,
         initialValue: 0,
         cancellable: manualCancellable,
@@ -381,64 +381,51 @@ void main() {
 
       controller.close();
     });
-    group('stateOfAsync Initializers', () {
-      test('stateValueOf', () {
-        final computer = stateValueOf(42);
-        expect(computer(), 42);
-      });
+    group('extension getters', () {
+      /// 验证各种对象、集合及 ValueNotifier 的 asStateComputation 与 asNullableStateComputation 扩展方法
+      test('asStateComputation and asNullableStateComputation', () {
+        // 验证数字与可空数字的状态计算器
+        expect(42.asStateComputation(), 42);
+        expect(42.asNullableStateComputation(), 42);
 
-      test('stateListOf', () {
-        final computer = stateListOf([1, 2, 3]);
-        expect(computer(), [1, 2, 3]);
-      });
-
-      test('stateMapOf', () {
-        final computer = stateMapOf({'a': 1});
-        expect(computer(), {'a': 1});
-      });
-
-      test('stateSetOf', () {
-        final computer = stateSetOf({1});
-        expect(computer(), {1});
-      });
-
-      test('extension getters (asStateOf, asNullableStateOf)', () {
-        expect(42.asStateOf(), 42);
-        expect(42.asNullableStateOf(), 42);
-
+        // 验证列表与可空列表的状态计算器
         final list = [1, 2, 3];
-        expect(list.asStateOf(), [1, 2, 3]);
-        expect(list.asNullableStateOf(), [1, 2, 3]);
+        expect(list.asStateComputation(), [1, 2, 3]);
+        expect(list.asNullableStateComputation(), [1, 2, 3]);
 
+        // 验证集合与可空集合的状态计算器
         final set = {1, 2};
-        expect(set.asStateOf(), {1, 2});
-        expect(set.asNullableStateOf(), {1, 2});
+        expect(set.asStateComputation(), {1, 2});
+        expect(set.asNullableStateComputation(), {1, 2});
 
+        // 验证映射与可空映射的状态计算器
         final map = {'a': 1};
-        expect(map.asStateOf(), {'a': 1});
-        expect(map.asNullableStateOf(), {'a': 1});
+        expect(map.asStateComputation(), {'a': 1});
+        expect(map.asNullableStateComputation(), {'a': 1});
 
+        // 验证 ValueNotifier 的 asStateComputation 扩展转换
         final notifier = ValueNotifier(10);
-        final computer = notifier.asStateOf;
+        final computer = notifier.asStateComputation;
         expect(computer(), 10);
-        final nullableComputer = notifier.asNullableStateOf;
+        final nullableComputer = notifier.asNullableStateComputation;
         expect(nullableComputer(), 10);
 
-        final nullComputer = nullAsStateOf<int>();
+        // 验证 nullAsStateComputation 辅助方法
+        final nullComputer = nullAsStateComputation<int>();
         expect(nullComputer(), isNull);
       });
     });
 
     group('stateOfAsyncData', () {
       test('initialValue default vs custom', () {
-        final comp1 = stateOfAsyncData<int>();
+        final comp1 = asyncDataComputation<int>();
         final r1 = ComputedState(
           computer: () => comp1(),
           cancellable: Cancellable(),
         );
         expect(r1.value, AsyncData<int>.loading());
 
-        final comp2 = stateOfAsyncData<int>(initialValue: 10);
+        final comp2 = asyncDataComputation<int>(initialValue: 10);
         final r2 = ComputedState(
           computer: () => comp2(),
           cancellable: Cancellable(),
@@ -448,7 +435,7 @@ void main() {
 
       test('Future, fFactory, fFactory2', () async {
         final completer = Completer<int>();
-        final compFuture = stateOfAsyncData<int>(future: completer.future);
+        final compFuture = asyncDataComputation<int>(future: completer.future);
         final rFuture = ComputedState(
           computer: () => compFuture(),
           cancellable: Cancellable(),
@@ -459,7 +446,7 @@ void main() {
         await Future.delayed(Duration.zero);
         expect(rFuture.value, AsyncData<int>.data(42));
 
-        final compFactory = stateOfAsyncData<int>(
+        final compFactory = asyncDataComputation<int>(
           fFactory: () => Future.value(100),
         );
         final rFactory = ComputedState(
@@ -471,7 +458,7 @@ void main() {
         expect(rFactory.value, AsyncData<int>.data(100));
 
         Cancellable? capturedCancellable;
-        final compFactory2 = stateOfAsyncData<int>(
+        final compFactory2 = asyncDataComputation<int>(
           fFactory2: (can) {
             capturedCancellable = can;
             return Future.value(200);
@@ -489,7 +476,7 @@ void main() {
 
       test('Future Error and onError', () async {
         final completer1 = Completer<int>();
-        final comp1 = stateOfAsyncData<int>(future: completer1.future);
+        final comp1 = asyncDataComputation<int>(future: completer1.future);
         final r1 = ComputedState(
           computer: () => comp1(),
           cancellable: Cancellable(),
@@ -502,7 +489,7 @@ void main() {
         expect((r1.value as AsyncDataError<int>).error, 'test error');
 
         final completer2 = Completer<int>();
-        final comp2 = stateOfAsyncData<int>(
+        final comp2 = asyncDataComputation<int>(
           future: completer2.future,
           onError: (e) => -1,
         );
@@ -517,7 +504,7 @@ void main() {
         expect(r2.value, AsyncData<int>.data(-1));
 
         final completer3 = Completer<int>();
-        final comp3 = stateOfAsyncData<int>(
+        final comp3 = asyncDataComputation<int>(
           future: completer3.future,
           onError: (e) => throw 'error in onError',
         );
@@ -535,7 +522,7 @@ void main() {
 
       test('Stream, sFactory, sFactory2', () async {
         final controller = StreamController<int>();
-        final compStream = stateOfAsyncData<int>(stream: controller.stream);
+        final compStream = asyncDataComputation<int>(stream: controller.stream);
         final rStream = ComputedState(
           computer: () => compStream(),
           cancellable: Cancellable(),
@@ -553,7 +540,7 @@ void main() {
         controller.close();
 
         final sController = StreamController<int>();
-        final compSFactory = stateOfAsyncData<int>(
+        final compSFactory = asyncDataComputation<int>(
           sFactory: () => sController.stream,
         );
         final rSFactory = ComputedState(
@@ -569,7 +556,7 @@ void main() {
 
         final s2Controller = StreamController<int>();
         Cancellable? capturedCancellable;
-        final compSFactory2 = stateOfAsyncData<int>(
+        final compSFactory2 = asyncDataComputation<int>(
           sFactory2: (can) {
             capturedCancellable = can;
             return s2Controller.stream;
@@ -590,7 +577,7 @@ void main() {
 
       test('Stream Error and cancelOnError', () async {
         final controller = StreamController<int>();
-        final comp = stateOfAsyncData<int>(
+        final comp = asyncDataComputation<int>(
           stream: controller.stream,
           cancelOnError: true,
         );
@@ -619,7 +606,7 @@ void main() {
 
       test('onError signatures', () async {
         final c1 = Completer<int>();
-        final comp1 = stateOfAsyncData<int>(
+        final comp1 = asyncDataComputation<int>(
           future: c1.future,
           onError: () => 1,
         );
@@ -630,7 +617,7 @@ void main() {
         expect(r1.value, AsyncData<int>.loading());
 
         final c2 = Completer<int>();
-        final comp2 = stateOfAsyncData<int>(
+        final comp2 = asyncDataComputation<int>(
           future: c2.future,
           onError: (e) => 2,
         );
@@ -641,7 +628,7 @@ void main() {
         expect(r2.value, AsyncData<int>.loading());
 
         final c3 = Completer<int>();
-        final comp3 = stateOfAsyncData<int>(
+        final comp3 = asyncDataComputation<int>(
           future: c3.future,
           onError: (e, s) => 3,
         );
@@ -666,7 +653,7 @@ void main() {
         final controller = StreamController<int>();
         final manualCancellable = Cancellable();
 
-        final comp = stateOfAsyncData<int>(
+        final comp = asyncDataComputation<int>(
           stream: controller.stream,
           cancellable: manualCancellable,
         );

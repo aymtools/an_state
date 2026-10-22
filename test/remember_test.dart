@@ -19,7 +19,7 @@ void main() {
               body: Builder(
                 builder: (context) {
                   buildCount++;
-                  state = context.rememberMutableState(stateValueOf(0));
+                  state = context.rememberState(stateMutableOf(0));
                   return Text('Value: ${state.value}');
                 },
               ),
@@ -52,8 +52,8 @@ void main() {
               body: Builder(
                 builder: (context) {
                   buildCount++;
-                  final computer = stateOfValueNotifier(notifier);
-                  final reactive = context.rememberState(() => computer());
+                  final computer = valueNotifierComputation(notifier);
+                  final reactive = context.rememberState(stateOf(() => computer()));
                   return Text('Value: ${reactive.value}');
                 },
               ),

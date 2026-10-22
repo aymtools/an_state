@@ -435,4 +435,49 @@ void main() {
       expect(pagerState.error, isA<Exception>());
     });
   });
+
+  group('stateRefreshableOf and stateRefreshablePagerOf factories', () {
+    // 验证 stateRefreshableOf 工厂函数能够正确创建 RefreshableState 实例并工作
+    test('stateRefreshableOf creates and initializes RefreshableState correctly', () async {
+      final stateFactory = stateRefreshableOf<int>(
+        (c) async => 999,
+        initialValue: 100,
+        autoLoad: null,
+      );
+
+      final cancellable = Cancellable();
+      final refreshableState = stateFactory(cancellable);
+
+      expect(refreshableState.hasData, isTrue);
+      expect(refreshableState.data, 100);
+
+      await refreshableState.refreshData();
+      expect(refreshableState.data, 999);
+
+      cancellable.cancel();
+    });
+
+    // 验证 stateRefreshablePagerOf 工厂函数能够正确创建 RefreshablePagerState 实例并工作
+    test('stateRefreshablePagerOf creates and initializes RefreshablePagerState correctly', () async {
+      final pagerFactory = stateRefreshablePagerOf<String, int, KPage<String, int>>(
+        (c, key) async {
+          return KPage(
+              data: ['test_1', 'test_2'],
+              hasPrevious: false,
+              hasNext: false,
+              nextPageKey: 1);
+        },
+        autoLoad: null,
+      );
+
+      final cancellable = Cancellable();
+      final pagerState = pagerFactory(cancellable);
+
+      await pagerState.refreshData();
+      expect(pagerState.data, ['test_1', 'test_2']);
+      expect(pagerState.pages.length, 1);
+
+      cancellable.cancel();
+    });
+  });
 }

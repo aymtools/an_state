@@ -12,6 +12,9 @@ typedef RStateEquality<T> = bool Function(T, T);
 /// 状态计算函数定义
 typedef RStateComputer<T> = T Function();
 
+///
+typedef RStateOf<S extends BaseState> = S Function(Cancellable);
+
 /// 昂贵计算包装器。
 /// 只有在首次调用时触发计算逻辑，之后会缓存结果并直接返回。
 /// 适用于那些只需要初始化一次的注册逻辑或重度计算。
@@ -26,24 +29,9 @@ RStateComputer<T> expensiveComputation<T>(RStateComputer<T> computer) {
   };
 }
 
-/// 创建一个固定值的计算器，不会随上游变化而重新计算。
-RStateComputer<T> stateValueOf<T>(T value) => expensiveComputation(() => value);
-
-/// 创建一个固定列表的计算器。
-RStateComputer<List<T>> stateListOf<T>(List<T> value) =>
-    expensiveComputation(() => value);
-
-/// 创建一个固定映射的计算器。
-RStateComputer<Map<K, V>> stateMapOf<K, V>(Map<K, V> value) =>
-    expensiveComputation(() => value);
-
-/// 创建一个固定集合的计算器。
-RStateComputer<Set<E>> stateSetOf<E>(Set<E> value) =>
-    expensiveComputation(() => value);
-
 /// 将 [ValueNotifier] 转换为响应式状态计算器。
 /// 当 [ValueNotifier] 的值发生变化时，会自动触发当前响应式上下文的刷新。
-RStateComputer<T> stateOfValueNotifier<T>(
+RStateComputer<T> valueNotifierComputation<T>(
   ValueNotifier<T> valueNotifier, {
   String? debugLabel,
 }) {
@@ -67,7 +55,7 @@ RStateComputer<T> stateOfValueNotifier<T>(
 
 /// 将 [ChangeNotifier] 转换为响应式状态计算器。
 /// 当 [ChangeNotifier] 发出通知时，会自动触发当前响应式上下文的刷新。
-RStateComputer<T> stateOfChangeNotifier<T, CN extends ChangeNotifier>({
+RStateComputer<T> changeNotifierComputation<T, CN extends ChangeNotifier>({
   required CN changeNotifier,
   required T Function(CN) computer,
   String? debugLabel,
@@ -94,7 +82,7 @@ RStateComputer<T> stateOfChangeNotifier<T, CN extends ChangeNotifier>({
 /// 当异步任务完成或产生新值时，会自动触发当前响应式上下文的刷新。
 /// 返回的计算器会先返回 [initialValue]，在异步任务产生新值后返回最新结果。
 /// [cancellable] 可以控制是否还可以继续使用
-RStateComputer<T> stateOfAsync<T>({
+RStateComputer<T> asyncComputation<T>({
   required T initialValue,
   Future<T>? future,
   Future<T> Function()? fFactory,
@@ -163,7 +151,7 @@ RStateComputer<T> stateOfAsync<T>({
 /// 当异步任务完成或产生新值时，会自动触发当前响应式上下文的刷新。
 /// 返回的计算器会先返回 [initialValue]，在异步任务产生新值后返回最新结果。
 /// [cancellable] 可以控制是否还可以继续使用
-RStateComputer<AsyncData<T>> stateOfAsyncData<T>({
+RStateComputer<AsyncData<T>> asyncDataComputation<T>({
   T? initialValue,
   Future<T>? future,
   Future<T> Function()? fFactory,
