@@ -3,12 +3,9 @@ import 'dart:async';
 import 'package:an_pager/an_pager.dart';
 import 'package:an_reactive_state/an_reactive_state.dart';
 import 'package:an_state/src/ext/async_data_state_ext.dart';
-import 'package:an_state/src/ext/remember_state_ext.dart';
 import 'package:an_state/src/tools.dart';
 import 'package:an_viewmodel/an_viewmodel.dart';
 import 'package:cancellable/cancellable.dart';
-import 'package:flutter/widgets.dart';
-import 'package:remember/remember.dart';
 
 /// 可刷新的响应式状态类，封装了异步数据 [AsyncData] 的刷新和重新加载操作。
 ///
