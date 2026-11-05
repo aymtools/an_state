@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:an_reactive_state/an_reactive_state.dart';
 import 'package:an_state/src/tools.dart';
 import 'package:anlifecycle/anlifecycle.dart';
 import 'package:cancellable/cancellable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:remember/remember.dart';
+
 // ignore: implementation_imports
 import 'package:remember/src/tools/element_safe.dart';
 
@@ -16,16 +19,30 @@ extension RememberStateExt on BuildContext {
   /// 状态的生命周期与当前 Widget 树中的节点绑定，在组件销毁时自动注销和释放。
   ///
   /// [stateOf] 状态定义构建器（如 `stateOfValue`、`stateOfComputation`、`stateOfRefreshable`、`.asStateOf` 等）。
+  /// [onCreate] 可选的状态首次构建逻辑回调，可接收初始化的状态、[Lifecycle] 和 [Cancellable]。
+  /// [onDispose] 可选的状态销毁逻辑回调，在组件销毁释放状态时触发。
   /// [debugLabel] 可选的调试标签。
   /// [listen] 是否在状态发生变化时自动触发当前 Widget 重新构建，默认为 `true`。
   S rememberState<S extends BaseState>(
     RStateOf<S> stateOf, {
+    void Function(S, Lifecycle, Cancellable)? onCreate,
+    FutureOr<void> Function(S)? onDispose,
     String? debugLabel,
     bool listen = true,
   }) {
+    final handleCreate = switch ((listen, onCreate)) {
+      (true, null) => onCreateListen,
+      (true, final create?) => (s, l, c) {
+          onCreateListen(s, l, c);
+          create(s, l, c);
+        },
+      (false, final create) => create,
+    };
+
     return remember<S>(
       factory3: (l, c) => stateOf(c),
-      onCreate: listen ? onCreateListen : null,
+      onCreate: handleCreate,
+      onDispose: onDispose,
       key: 'rememberState',
     );
   }

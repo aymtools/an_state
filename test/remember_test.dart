@@ -200,5 +200,45 @@ void main() {
       expect(find.text('State: 2-B'), findsOneWidget);
       expect(buildCount, 3);
     });
+
+    testWidgets(
+        'rememberState with onCreate and onDispose callbacks when listen is true vs false',
+        (WidgetTester tester) async {
+      bool onCreateCalled = false;
+      bool onDisposeCalled = false;
+      late RState<int> state;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LifecycleScopeOwner(
+            scope: 'test',
+            child: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  state = context.rememberState(
+                    0.asStateOf,
+                    onCreate: (s, l, c) => onCreateCalled = true,
+                    onDispose: (s) => onDisposeCalled = true,
+                  );
+                  return Text('Value: ${state.value}');
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(onCreateCalled, isTrue);
+      expect(find.text('Value: 0'), findsOneWidget);
+
+      // Trigger change and rebuild
+      state.value = 5;
+      await tester.pump();
+      expect(find.text('Value: 5'), findsOneWidget);
+
+      // Dispose widget tree
+      await tester.pumpWidget(const SizedBox());
+      expect(onDisposeCalled, isTrue);
+    });
   });
 }
