@@ -8,13 +8,13 @@ import 'package:flutter_test/flutter_test.dart';
 /// 用于测试 ViewModel 多状态管理与生命周期副作用的测试 ViewModel。
 class MultiStateViewModel extends ViewModel {
   /// 定义第一个可变状态
-  late final count = state(stateMutableOf(10));
+  late final count = stateOf(10.asStateOf);
   
   /// 定义第二个可变状态
-  late final name = state(stateMutableOf('Dart'));
+  late final name = stateOf('Dart'.asStateOf);
 
   /// 定义计算状态，依赖 count 和 name
-  late final summary = state(stateOf(() => '${name.value}: ${count.value}'));
+  late final summary = stateOf(stateOfComputation(() => '${name.value}: ${count.value}'));
 
   /// 记录 useEffect 被触发的次数
   int effectRunCount = 0;

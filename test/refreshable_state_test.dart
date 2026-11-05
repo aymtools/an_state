@@ -436,10 +436,10 @@ void main() {
     });
   });
 
-  group('stateRefreshableOf and stateRefreshablePagerOf factories', () {
-    // 验证 stateRefreshableOf 工厂函数能够正确创建 RefreshableState 实例并工作
-    test('stateRefreshableOf creates and initializes RefreshableState correctly', () async {
-      final stateFactory = stateRefreshableOf<int>(
+  group('stateOfRefreshable and stateOfRefreshablePager factories', () {
+    // 验证 stateOfRefreshable 工厂函数能够正确创建 RefreshableState 实例并工作
+    test('stateOfRefreshable creates and initializes RefreshableState correctly', () async {
+      final stateFactory = stateOfRefreshable<int>(
         (c) async => 999,
         initialValue: 100,
         autoLoad: null,
@@ -457,9 +457,9 @@ void main() {
       cancellable.cancel();
     });
 
-    // 验证 stateRefreshablePagerOf 工厂函数能够正确创建 RefreshablePagerState 实例并工作
-    test('stateRefreshablePagerOf creates and initializes RefreshablePagerState correctly', () async {
-      final pagerFactory = stateRefreshablePagerOf<String, int, KPage<String, int>>(
+    // 验证 stateOfRefreshablePager 工厂函数能够正确创建 RefreshablePagerState 实例并工作
+    test('stateOfRefreshablePager creates and initializes RefreshablePagerState correctly', () async {
+      final pagerFactory = stateOfRefreshablePager<String, int, KPage<String, int>>(
         (c, key) async {
           return KPage(
               data: ['test_1', 'test_2'],

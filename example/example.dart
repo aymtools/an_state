@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
 }
 
 class CounterViewModel extends ViewModel {
-  late final count = state(0.asStateMutableOf);
-  late final isEven = state(stateOf(() => count.value % 2 == 0));
+  late final count = stateOf(0.asStateOf);
+  late final isEven = stateOf(stateOfComputation(() => count.value % 2 == 0));
 
   void increment() {
     count.value++;
@@ -76,8 +76,8 @@ class LocalCounter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Using rememberState for local UI state with .asStateMutableOf
-    final localCount = context.rememberState(0.asStateMutableOf);
+    // Using rememberState for local UI state with .asStateOf
+    final localCount = context.rememberState(0.asStateOf);
 
     return Column(
       children: [

@@ -170,5 +170,24 @@ void main() {
       expect(state.hasData, isTrue);
       expect(state.isError, isTrue);
     });
+
+    /// 测试点 7：验证 asStateOfAsyncData、stateOfAsyncDataLoading 和 stateOfAsyncData 工厂方法
+    test('asStateOfAsyncData, stateOfAsyncDataLoading, and stateOfAsyncData factories', () {
+      final cancellable = Cancellable();
+
+      final s1 = 42.asStateOfAsyncData(cancellable);
+      expect(s1.hasData, isTrue);
+      expect(s1.data, 42);
+
+      final s2 = stateOfAsyncDataLoading<int>()(cancellable);
+      expect(s2.isLoading, isTrue);
+      expect(s2.hasData, isFalse);
+
+      final s3 = stateOfAsyncData<int>(100)(cancellable);
+      expect(s3.hasData, isTrue);
+      expect(s3.data, 100);
+
+      cancellable.cancel();
+    });
   });
 }

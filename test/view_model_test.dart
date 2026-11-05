@@ -7,10 +7,10 @@ import 'package:anlifecycle/anlifecycle.dart';
 /// 测试专用的计数器 ViewModel，用于验证 ViewModel 的状态绑定与生命周期管理。
 class CounterViewModel extends ViewModel {
   /// 可变状态：计数器
-  late final count = state(stateMutableOf(0));
+  late final count = stateOf(0.asStateOf);
   
   /// 计算状态：计数器的两倍
-  late final doubleCount = state(stateOf(() => count.value * 2));
+  late final doubleCount = stateOf(stateOfComputation(() => count.value * 2));
 
   /// 计数器自增操作
   void increment() => count.value++;
