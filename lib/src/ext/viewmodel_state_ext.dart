@@ -10,9 +10,9 @@ extension ViewmodelStateExt on ViewModel {
   /// 该方法将通过 [stateOf] 工厂创建状态，并将其生命周期绑定到 ViewModel 的 [makeLiveCancellable]。
   /// 当 ViewModel 销毁（Cleared）时，该状态会自动被释放并取消关联任务。
   ///
-  /// [stateOf] 状态定义构建器（如 `stateMutableOf`、`stateOf`、`stateRefreshableOf` 等）。
+  /// [stateOf] 状态定义构建器（如 `stateOfValue`、`stateOfComputation`、`stateOfRefreshable`、`.asStateOf` 等）。
   /// [debugLabel] 可选的调试标签。
-  S state<S extends BaseState>(
+  S stateOf<S extends BaseState>(
     RStateOf<S> stateOf, {
     String? debugLabel,
   }) {

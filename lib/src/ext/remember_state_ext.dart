@@ -4,7 +4,6 @@ import 'package:anlifecycle/anlifecycle.dart';
 import 'package:cancellable/cancellable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:remember/remember.dart';
-
 // ignore: implementation_imports
 import 'package:remember/src/tools/element_safe.dart';
 
@@ -16,7 +15,7 @@ extension RememberStateExt on BuildContext {
   ///
   /// 状态的生命周期与当前 Widget 树中的节点绑定，在组件销毁时自动注销和释放。
   ///
-  /// [stateOf] 状态定义构建器（如 `stateMutableOf`、`stateOf`、`stateRefreshableOf` 等）。
+  /// [stateOf] 状态定义构建器（如 `stateOfValue`、`stateOfComputation`、`stateOfRefreshable`、`.asStateOf` 等）。
   /// [debugLabel] 可选的调试标签。
   /// [listen] 是否在状态发生变化时自动触发当前 Widget 重新构建，默认为 `true`。
   S rememberState<S extends BaseState>(

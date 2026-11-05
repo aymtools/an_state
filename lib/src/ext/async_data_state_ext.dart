@@ -1,5 +1,7 @@
 import 'package:an_async_data/an_async_data.dart';
 import 'package:an_reactive_state/an_reactive_state.dart';
+import 'package:an_state/src/as_state_of.dart';
+import 'package:an_state/src/tools.dart';
 
 /// 针对 [RState<AsyncData<T>>] 类型的响应式异步数据状态扩展。
 ///
@@ -100,3 +102,20 @@ extension AsyncDataStateExt<T> on RState<AsyncData<T>> {
     throw StateError('AsyncData<$T> not has data');
   }
 }
+
+/// 为任意数据类型 [T] 提供快速转换为 [AsyncData] 响应式状态工厂的扩展。
+extension AsyncDataAsStateExt<T> on T {
+  /// 将当前数据包装为包含成功数据 [AsyncData] 的响应式状态工厂 [RStateOf<RState<AsyncData<T>>>]。
+  RStateOf<RState<AsyncData<T>>> get asStateOfAsyncData =>
+      AsyncData<T>(this).asStateOf;
+}
+
+/// 创建一个初始状态为纯加载中 [AsyncData.loading] 的 [AsyncData] 响应式状态工厂。
+RStateOf<RState<AsyncData<T>>> stateOfAsyncDataLoading<T>() =>
+    AsyncData<T>.loading().asStateOf;
+
+/// 创建一个初始状态为包含数据 [value] 的 [AsyncData] 响应式状态工厂。
+///
+/// [value] 初始成功数据值。
+RStateOf<RState<AsyncData<T>>> stateOfAsyncData<T>(T value) =>
+    AsyncData<T>(value).asStateOf;

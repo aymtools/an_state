@@ -229,47 +229,93 @@ class RefreshablePagerState<T, K, P extends BasePager<T, K, P>>
 
 /// 创建一个可刷新响应式状态 [RefreshableState] 的工厂函数。
 ///
-/// 返回一个 [RStateOf<RefreshableState<T>>] 状态定义工厂，可配合 `state(...)` 或 `context.rememberState(...)` 使用。
+/// 返回一个 [RStateOf<RefreshableState<T>>] 状态定义工厂，可配合 `stateOf(...)` 或 `context.rememberState(...)` 使用。
 ///
 /// [reloader] 异步数据加载逻辑函数，接收可取消句柄 [Cancellable]。
 /// [initialValue] 可选的初始数据值；若不提供则默认为加载中状态。
 /// [equals] 可选的状态值相等性比较器。
 /// [autoLoad] 是否在初始化时自动触发加载。
+/// [autoRefreshEffect] 可选的自动刷新副作用闭包，依赖状态变化且返回 `true` 时自动触发 [RefreshableState.refreshData]。
+/// [autoReloadEffect] 可选的自动重载副作用闭包，依赖状态变化且返回 `true` 时自动触发 [RefreshableState.reloadData]。
 /// [debugLabel] 可选的调试标签。
-RStateOf<RefreshableState<T>> stateRefreshableOf<T>(
+RStateOf<RefreshableState<T>> stateOfRefreshable<T>(
   FutureOr<T> Function(Cancellable) reloader, {
   T? initialValue,
   RStateEquality<AsyncData<T>>? equals,
   bool? autoLoad = true,
+  bool Function()? autoRefreshEffect,
+  bool Function()? autoReloadEffect,
   String? debugLabel,
 }) =>
-    (cancellable) => RefreshableState<T>(
-        reloader: reloader,
-        initialValue: initialValue,
-        cancellable: cancellable,
-        equals: equals,
-        autoLoad: autoLoad);
+    (cancellable) {
+      final state = RefreshableState<T>(
+          reloader: reloader,
+          initialValue: initialValue,
+          cancellable: cancellable,
+          equals: equals,
+          autoLoad: autoLoad);
+      if (autoRefreshEffect != null) {
+        effect(() {
+          final r = autoRefreshEffect();
+          if (r) {
+            state.refreshData();
+          }
+        }, cancellable: state.makeLiveCancellable());
+      }
+      if (autoReloadEffect != null) {
+        effect(() {
+          final r = autoReloadEffect();
+          if (r) {
+            state.reloadData();
+          }
+        }, cancellable: state.makeLiveCancellable());
+      }
+      return state;
+    };
 
 /// 创建一个支持分页加载的可刷新响应式状态 [RefreshablePagerState] 的工厂函数。
 ///
-/// 返回一个 [RStateOf<RefreshablePagerState<T, K, P>>] 状态定义工厂，可配合 `state(...)` 或 `context.rememberState(...)` 使用。
+/// 返回一个 [RStateOf<RefreshablePagerState<T, K, P>>] 状态定义工厂，可配合 `stateOf(...)` 或 `context.rememberState(...)` 使用。
 ///
 /// [pageLoader] 分页数据加载逻辑函数，接收可取消句柄 [Cancellable] 与下一页的 Key。
 /// [first] 可选的首页预加载分页数据。
 /// [equals] 可选的状态值相等性比较器。
 /// [autoLoad] 是否在初始化时自动触发首页加载。
+/// [autoRefreshEffect] 可选的自动刷新副作用闭包，依赖状态变化且返回 `true` 时自动触发 [RefreshablePagerState.refreshData]。
+/// [autoReloadEffect] 可选的自动重载副作用闭包，依赖状态变化且返回 `true` 时自动触发 [RefreshablePagerState.reloadData]。
 /// [debugLabel] 可选的调试标签。
 RStateOf<RefreshablePagerState<T, K, P>>
-    stateRefreshablePagerOf<T, K, P extends BasePager<T, K, P>>(
+    stateOfRefreshablePager<T, K, P extends BasePager<T, K, P>>(
   FutureOr<P> Function(Cancellable, K?) pageLoader, {
   P? first,
   RStateEquality<AsyncData<List<T>>>? equals,
   bool? autoLoad = true,
+  bool Function()? autoRefreshEffect,
+  bool Function()? autoReloadEffect,
   String? debugLabel,
 }) =>
-        (cancellable) => RefreshablePagerState<T, K, P>(
-            pageLoader: pageLoader,
-            first: first,
-            cancellable: cancellable,
-            equals: equals,
-            autoLoad: autoLoad);
+        (cancellable) {
+          final state = RefreshablePagerState<T, K, P>(
+              pageLoader: pageLoader,
+              first: first,
+              cancellable: cancellable,
+              equals: equals,
+              autoLoad: autoLoad);
+          if (autoRefreshEffect != null) {
+            effect(() {
+              final r = autoRefreshEffect();
+              if (r) {
+                state.refreshData();
+              }
+            }, cancellable: state.makeLiveCancellable());
+          }
+          if (autoReloadEffect != null) {
+            effect(() {
+              final r = autoReloadEffect();
+              if (r) {
+                state.reloadData();
+              }
+            }, cancellable: state.makeLiveCancellable());
+          }
+          return state;
+        };
